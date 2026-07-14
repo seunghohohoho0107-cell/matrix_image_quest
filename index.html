@@ -1,0 +1,3268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix Image Quest - 행렬 이미지 게임 학습</title>
+  <style>
+    :root{
+      --bg:#07101f;
+      --bg2:#0d1830;
+      --panel:#121f39;
+      --panel2:#172845;
+      --line:#284163;
+      --text:#eef6ff;
+      --muted:#9bb0ca;
+      --cyan:#58d8ff;
+      --blue:#5b7cff;
+      --purple:#9a6bff;
+      --pink:#ff6cae;
+      --green:#4ee0a0;
+      --yellow:#ffd761;
+      --orange:#ff9b54;
+      --red:#ff647c;
+      --shadow:0 18px 50px rgba(0,0,0,.32);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+      background:
+        radial-gradient(circle at 12% 12%,rgba(91,124,255,.22),transparent 28%),
+        radial-gradient(circle at 88% 18%,rgba(154,107,255,.18),transparent 25%),
+        radial-gradient(circle at 45% 90%,rgba(88,216,255,.12),transparent 30%),
+        linear-gradient(145deg,#050b16,#091429 48%,#07111f);
+      line-height:1.65;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.55;
+      background-image:
+        radial-gradient(circle,#fff 0 1px,transparent 1.4px),
+        radial-gradient(circle,#7ccfff 0 1px,transparent 1.5px);
+      background-size:90px 90px,140px 140px;
+      background-position:0 0,35px 55px;
+      z-index:-1;
+    }
+
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    code,pre,.mono{font-family:Consolas,"Courier New",monospace}
+
+    .game-shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:310px minmax(0,1fr);
+    }
+
+    .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+      padding:20px 16px 26px;
+      background:rgba(6,14,29,.92);
+      backdrop-filter:blur(18px);
+      border-right:1px solid rgba(111,155,213,.18);
+      z-index:20;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:4px 7px 17px;
+      border-bottom:1px solid rgba(255,255,255,.09);
+    }
+
+    .brand-mark{
+      flex:none;
+      width:52px;
+      height:52px;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      background:linear-gradient(135deg,var(--cyan),var(--blue) 52%,var(--purple));
+      color:#07101f;
+      font-weight:1000;
+      font-size:20px;
+      box-shadow:0 10px 28px rgba(91,124,255,.34);
+    }
+
+    .brand strong{display:block;font-size:16px;letter-spacing:-.02em}
+    .brand small{display:block;color:var(--muted);font-size:12px}
+
+    .pilot-card{
+      margin:16px 4px;
+      padding:15px;
+      border:1px solid rgba(117,165,224,.18);
+      border-radius:16px;
+      background:linear-gradient(145deg,rgba(30,52,87,.83),rgba(17,31,55,.88));
+    }
+
+    .pilot-top{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .avatar{
+      width:43px;height:43px;
+      display:grid;place-items:center;
+      border-radius:13px;
+      background:#0b172a;
+      border:1px solid #37547a;
+      font-size:23px;
+    }
+
+    .pilot-name{font-weight:900}
+    .pilot-rank{color:var(--cyan);font-size:12px}
+
+    .xp-row{
+      display:flex;
+      justify-content:space-between;
+      margin-top:12px;
+      color:#c9d7ea;
+      font-size:12px;
+    }
+
+    .xp-bar{
+      height:9px;
+      margin-top:6px;
+      border-radius:99px;
+      overflow:hidden;
+      background:#07101f;
+      border:1px solid #263e5e;
+    }
+
+    .xp-bar span{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:inherit;
+      background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));
+      transition:.5s;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:7px;
+      margin-top:12px;
+    }
+
+    .stat{
+      padding:8px 4px;
+      text-align:center;
+      border-radius:10px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.07);
+    }
+
+    .stat b{display:block;color:white;font-size:15px}
+    .stat small{color:#8fa7c3;font-size:10px}
+
+    .map-title{
+      margin:20px 10px 8px;
+      color:#7f98b8;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+    }
+
+    .stage-map{
+      position:relative;
+      display:grid;
+      gap:7px;
+    }
+
+    .stage-map::before{
+      content:"";
+      position:absolute;
+      left:28px;
+      top:23px;
+      bottom:23px;
+      width:2px;
+      background:linear-gradient(#365177,#243b59);
+      z-index:0;
+    }
+
+    .stage-button{
+      position:relative;
+      z-index:1;
+      width:100%;
+      display:grid;
+      grid-template-columns:42px 1fr auto;
+      gap:10px;
+      align-items:center;
+      padding:9px 10px 9px 8px;
+      text-align:left;
+      border:1px solid transparent;
+      border-radius:13px;
+      color:#c7d5e7;
+      background:transparent;
+      transition:.2s;
+    }
+
+    .stage-button:hover:not(.locked),
+    .stage-button.active{
+      color:white;
+      background:rgba(86,132,199,.15);
+      border-color:rgba(112,164,231,.18);
+      transform:translateX(2px);
+    }
+
+    .stage-button.locked{
+      cursor:not-allowed;
+      opacity:.45;
+      filter:grayscale(.6);
+    }
+
+    .stage-node{
+      width:42px;height:42px;
+      display:grid;place-items:center;
+      border-radius:13px;
+      background:#101d33;
+      border:2px solid #365275;
+      font-weight:1000;
+      color:#9ab1ce;
+    }
+
+    .stage-button.completed .stage-node{
+      color:#062719;
+      border-color:#4ee0a0;
+      background:linear-gradient(135deg,#70f0b9,#36c78b);
+      box-shadow:0 0 22px rgba(78,224,160,.28);
+    }
+
+    .stage-button.active .stage-node{
+      color:#06111f;
+      border-color:var(--cyan);
+      background:linear-gradient(135deg,var(--cyan),#79a4ff);
+      box-shadow:0 0 24px rgba(88,216,255,.28);
+    }
+
+    .stage-label b{display:block;font-size:13px}
+    .stage-label small{display:block;color:#839bb8;font-size:10px}
+    .stage-status{font-size:15px}
+
+    .side-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin:18px 4px 0;
+    }
+
+    .side-actions button{
+      padding:9px;
+      border-radius:10px;
+      border:1px solid #2e486b;
+      color:#cfe0f5;
+      background:#111f36;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .main{
+      min-width:0;
+      padding:24px 30px 70px;
+    }
+
+    .top-hud{
+      position:sticky;
+      top:12px;
+      z-index:15;
+      max-width:1240px;
+      margin:0 auto 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:11px 14px;
+      border:1px solid rgba(118,166,226,.16);
+      border-radius:15px;
+      color:#dceaff;
+      background:rgba(10,23,43,.82);
+      backdrop-filter:blur(14px);
+      box-shadow:0 10px 28px rgba(0,0,0,.2);
+    }
+
+    .hud-left,.hud-right{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+    .hud-chip{
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid rgba(137,182,239,.15);
+      background:rgba(255,255,255,.045);
+      font-size:12px;
+    }
+
+    .icon-btn{
+      width:35px;height:35px;
+      display:grid;place-items:center;
+      border:1px solid #2e4a6f;
+      border-radius:10px;
+      color:white;
+      background:#142540;
+    }
+
+    .content{
+      max-width:1240px;
+      margin:auto;
+    }
+
+    .stage-screen{display:none;animation:fadeIn .34s ease}
+    .stage-screen.active{display:block}
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:none}
+    }
+
+    .stage-hero{
+      position:relative;
+      overflow:hidden;
+      min-height:260px;
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      gap:25px;
+      align-items:center;
+      padding:34px;
+      border:1px solid rgba(121,172,236,.2);
+      border-radius:24px;
+      background:
+        radial-gradient(circle at 86% 14%,rgba(88,216,255,.15),transparent 27%),
+        linear-gradient(135deg,#12223e,#162b4a 55%,#152446);
+      box-shadow:var(--shadow);
+    }
+
+    .stage-hero::after{
+      content:"";
+      position:absolute;
+      right:-90px;bottom:-130px;
+      width:330px;height:330px;
+      border:55px solid rgba(118,120,255,.08);
+      border-radius:50%;
+    }
+
+    .chapter{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#06131f;
+      background:linear-gradient(90deg,var(--cyan),#a3ecff);
+      font-size:12px;
+      font-weight:1000;
+    }
+
+    .stage-hero h1{
+      margin:15px 0 9px;
+      font-size:clamp(32px,4vw,54px);
+      line-height:1.1;
+      letter-spacing:-.045em;
+    }
+
+    .stage-hero p{
+      max-width:760px;
+      margin:0;
+      color:#a9bdd5;
+      font-size:16px;
+    }
+
+    .reward-preview{
+      position:relative;
+      z-index:1;
+      padding:19px;
+      border-radius:18px;
+      background:rgba(5,13,27,.48);
+      border:1px solid rgba(141,186,241,.18);
+    }
+
+    .reward-preview h3{margin:0 0 9px}
+    .reward-list{display:grid;gap:8px}
+    .reward-line{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 10px;
+      border-radius:9px;
+      background:rgba(255,255,255,.045);
+      color:#cad8eb;
+      font-size:13px;
+    }
+
+    .quest-flow{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin:18px 0;
+    }
+
+    .flow-step{
+      min-height:70px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px;
+      border:1px solid #263f60;
+      border-radius:14px;
+      background:rgba(16,31,55,.86);
+    }
+
+    .flow-step span{
+      flex:none;
+      width:31px;height:31px;
+      display:grid;place-items:center;
+      border-radius:9px;
+      color:#06121f;
+      background:linear-gradient(135deg,var(--cyan),#8f9fff);
+      font-weight:1000;
+    }
+
+    .flow-step b{display:block;font-size:13px}
+    .flow-step small{display:block;color:#8098b6;font-size:10px}
+
+    .game-card{
+      margin-top:16px;
+      padding:22px;
+      border:1px solid rgba(112,162,225,.17);
+      border-radius:18px;
+      background:rgba(16,30,53,.92);
+      box-shadow:0 12px 32px rgba(0,0,0,.18);
+    }
+
+    .card-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:15px;
+      margin-bottom:16px;
+    }
+
+    .card-title{
+      display:flex;
+      gap:11px;
+      align-items:center;
+    }
+
+    .card-icon{
+      flex:none;
+      width:40px;height:40px;
+      display:grid;place-items:center;
+      border-radius:12px;
+      background:#0b172a;
+      border:1px solid #365375;
+      font-size:20px;
+    }
+
+    .card-head h2{margin:0;font-size:22px}
+    .card-head p{margin:3px 0 0;color:var(--muted);font-size:13px}
+
+    .knowledge-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:13px;
+    }
+
+    .knowledge-tile{
+      padding:15px;
+      border:1px solid #294363;
+      border-radius:13px;
+      background:#0d1a2f;
+    }
+
+    .knowledge-tile b{
+      display:block;
+      color:var(--cyan);
+      margin-bottom:5px;
+    }
+
+    .knowledge-tile p{
+      margin:0;
+      color:#adbed3;
+      font-size:13px;
+    }
+
+    .formula{
+      padding:13px 15px;
+      border-radius:11px;
+      color:#dff7ff;
+      background:#081526;
+      border:1px solid #284868;
+      font-family:Consolas,monospace;
+      white-space:pre-wrap;
+      overflow:auto;
+    }
+
+    .mission-box{
+      padding:16px;
+      border:1px solid rgba(154,107,255,.32);
+      border-radius:14px;
+      background:linear-gradient(135deg,rgba(92,57,157,.22),rgba(20,37,67,.75));
+    }
+
+    .mission-box b{
+      display:block;
+      margin-bottom:4px;
+      color:#cfb7ff;
+    }
+
+    .mission-box p{margin:0;color:#c8d7e9}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+
+    .tool-panel{
+      min-width:0;
+      padding:16px;
+      border:1px solid #29425f;
+      border-radius:14px;
+      background:#0c192c;
+    }
+
+    .tool-panel h3{margin:0 0 10px}
+    .controls{
+      display:flex;
+      gap:9px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin:10px 0;
+    }
+
+    input,select{
+      color:#edf6ff;
+      background:#0b1728;
+      border:1px solid #34516f;
+      border-radius:9px;
+      padding:8px 9px;
+    }
+
+    input[type="range"]{padding:0;accent-color:var(--cyan)}
+    input[type="color"]{width:48px;height:37px;padding:3px}
+    input[type="file"]{max-width:100%}
+
+    .btn{
+      border:0;
+      border-radius:10px;
+      padding:9px 13px;
+      font-weight:900;
+      transition:.18s;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{color:#06131f;background:linear-gradient(135deg,var(--cyan),#7ca6ff)}
+    .btn-purple{color:white;background:linear-gradient(135deg,#7757df,#9a6bff)}
+    .btn-green{color:#042118;background:linear-gradient(135deg,#4ee0a0,#7cf2be)}
+    .btn-soft{color:#cfe1f7;background:#172b49;border:1px solid #34516f}
+    .btn-red{color:#ffeef2;background:#6b2639}
+    .btn-gold{color:#2a1b00;background:linear-gradient(135deg,#ffd761,#ffad57)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+    pre{
+      margin:0;
+      padding:16px;
+      overflow:auto;
+      white-space:pre;
+      color:#e9f3ff;
+      background:#07111f;
+      border:1px solid #223b59;
+      border-radius:12px;
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .matrix-input{
+      display:grid;
+      grid-template-columns:repeat(2,72px);
+      gap:8px;
+      justify-content:start;
+    }
+
+    .matrix-input input{
+      width:72px;
+      text-align:center;
+      font-family:Consolas,monospace;
+    }
+
+    .matrix-output{
+      min-height:105px;
+      display:grid;
+      place-items:center;
+      padding:12px;
+      white-space:pre;
+      border:1px dashed #3a5d80;
+      border-radius:11px;
+      color:#e8f6ff;
+      background:#07131f;
+      font:16px/1.6 Consolas,monospace;
+    }
+
+    .canvas-frame{
+      min-height:230px;
+      display:grid;
+      place-items:center;
+      padding:12px;
+      border:1px solid #29445f;
+      border-radius:14px;
+      background:
+        linear-gradient(45deg,#0b1728 25%,transparent 25%),
+        linear-gradient(-45deg,#0b1728 25%,transparent 25%),
+        linear-gradient(45deg,transparent 75%,#0b1728 75%),
+        linear-gradient(-45deg,transparent 75%,#0b1728 75%),
+        #101e33;
+      background-size:24px 24px;
+      background-position:0 0,0 12px,12px -12px,-12px 0;
+      overflow:auto;
+    }
+
+    canvas{
+      display:block;
+      max-width:100%;
+      background:white;
+      border:1px solid #06101d;
+      image-rendering:pixelated;
+      image-rendering:crisp-edges;
+    }
+
+    .value-grid{
+      display:grid;
+      gap:4px;
+      margin-top:11px;
+    }
+
+    .value-cell{
+      width:44px;height:44px;
+      display:grid;place-items:center;
+      padding:0;
+      border:1px solid #34516f;
+      border-radius:7px;
+      font:12px Consolas,monospace;
+    }
+
+    .heart-editor{
+      display:grid;
+      gap:5px;
+      justify-content:center;
+      padding:15px;
+      border:1px solid #29435f;
+      border-radius:14px;
+      background:#0a1729;
+    }
+
+    .heart-cell{
+      width:42px;height:42px;
+      border:0;
+      border-radius:7px;
+      background:#fff;
+      box-shadow:inset 0 0 0 1px #97a4b6;
+      transition:.12s;
+    }
+
+    .heart-cell.on{background:var(--heart-color,#ff4f74)}
+    .heart-cell:hover{transform:scale(1.08)}
+
+    .compare-row{
+      display:grid;
+      grid-template-columns:1fr 38px 1fr 38px 1fr;
+      gap:10px;
+      align-items:center;
+    }
+
+    .operator{
+      text-align:center;
+      font-size:31px;
+      font-weight:1000;
+      color:#91a9c5;
+    }
+
+    .mini-title{
+      text-align:center;
+      margin-bottom:7px;
+      color:#cfe0f4;
+      font-weight:900;
+    }
+
+    .result-note{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:11px;
+      border:1px solid #294663;
+      background:#0b192b;
+      color:#c5d5e8;
+    }
+
+    .slider-row{
+      display:grid;
+      grid-template-columns:55px 1fr 70px;
+      align-items:center;
+      gap:12px;
+    }
+
+    .filter-controls{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(145px,1fr));
+      gap:10px;
+      margin:12px 0;
+    }
+
+    .filter-control{
+      padding:11px;
+      border:1px solid #2a4564;
+      border-radius:11px;
+      background:#0b182b;
+    }
+
+    .filter-control label{
+      display:block;
+      margin-bottom:6px;
+      color:#cfe0f5;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .filter-control input[type="range"]{width:100%}
+    .filter-control.disabled{opacity:.35;pointer-events:none}
+
+    .pixel-info{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      margin-top:10px;
+      border:1px solid #29445f;
+      border-radius:10px;
+      background:#0a1728;
+      color:#b9cce2;
+      font-size:12px;
+    }
+
+    .pixel-swatch{
+      flex:none;
+      width:35px;height:35px;
+      border-radius:8px;
+      border:1px solid #69809a;
+      background:#fff;
+    }
+
+    .mission-actions{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      flex-wrap:wrap;
+      margin-top:17px;
+    }
+
+    .mission-feedback{
+      display:none;
+      flex:1;
+      min-width:240px;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:13px;
+    }
+
+    .mission-feedback.show{display:block}
+    .mission-feedback.good{
+      color:#b9f9dc;
+      background:rgba(39,148,103,.18);
+      border:1px solid rgba(78,224,160,.35);
+    }
+
+    .mission-feedback.bad{
+      color:#ffd0d8;
+      background:rgba(177,54,80,.2);
+      border:1px solid rgba(255,100,124,.34);
+    }
+
+    .hint-box,.answer-box{
+      display:none;
+      margin-top:11px;
+      padding:12px 14px;
+      border-radius:11px;
+    }
+
+    .hint-box.open{
+      display:block;
+      color:#ffe5a3;
+      background:rgba(174,119,28,.17);
+      border:1px solid rgba(255,215,97,.31);
+    }
+
+    .answer-box.open{
+      display:block;
+      color:#c7f6df;
+      background:rgba(37,135,95,.17);
+      border:1px solid rgba(78,224,160,.3);
+    }
+
+    .field-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .field-card{
+      min-height:145px;
+      padding:15px;
+      border-radius:13px;
+      border:1px solid #324a67;
+      background:linear-gradient(145deg,#101d31,#0c1728);
+    }
+
+    .field-card .emoji{font-size:25px}
+    .field-card b{display:block;margin:7px 0 4px;color:var(--yellow)}
+    .field-card p{margin:0;color:#a9bbcf;font-size:12px}
+
+    .achievement-list{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:9px;
+    }
+
+    .achievement{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px;
+      border-radius:11px;
+      border:1px solid #29435f;
+      background:#0b1728;
+      opacity:.45;
+    }
+
+    .achievement.unlocked{
+      opacity:1;
+      border-color:rgba(255,215,97,.45);
+      background:rgba(107,75,20,.18);
+    }
+
+    .achievement-icon{
+      width:37px;height:37px;
+      display:grid;place-items:center;
+      border-radius:10px;
+      background:#172844;
+      font-size:20px;
+    }
+
+    .achievement b{display:block;font-size:12px}
+    .achievement small{display:block;color:#879eb8;font-size:10px}
+
+    .quiz-grid{display:grid;gap:12px}
+    .quiz-card{
+      padding:16px;
+      border:1px solid #29435f;
+      border-radius:13px;
+      background:#0b182b;
+    }
+
+    .quiz-card p{margin:0 0 10px;font-weight:900}
+    .quiz-card label{
+      display:block;
+      padding:9px 10px;
+      margin:6px 0;
+      border:1px solid #29425f;
+      border-radius:9px;
+      color:#c3d3e5;
+      background:#101f35;
+      cursor:pointer;
+    }
+
+    .quiz-card label:hover{border-color:#5075a2}
+    .boss-score{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-top:15px;
+      padding:16px;
+      border-radius:14px;
+      background:linear-gradient(135deg,#522a77,#273f79);
+    }
+
+    .boss-score strong{font-size:26px}
+    .timer{
+      color:var(--yellow);
+      font-family:Consolas,monospace;
+      font-weight:900;
+    }
+
+    .welcome-overlay,.reward-overlay{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:none;
+      place-items:center;
+      padding:18px;
+      background:rgba(3,8,17,.78);
+      backdrop-filter:blur(10px);
+    }
+
+    .welcome-overlay.show,.reward-overlay.show{display:grid}
+
+    .modal{
+      width:min(620px,100%);
+      padding:28px;
+      border:1px solid #375778;
+      border-radius:22px;
+      background:
+        radial-gradient(circle at 80% 10%,rgba(88,216,255,.13),transparent 30%),
+        linear-gradient(145deg,#142743,#0e1b31);
+      box-shadow:0 28px 80px rgba(0,0,0,.55);
+      text-align:center;
+    }
+
+    .modal-icon{
+      width:76px;height:76px;
+      display:grid;place-items:center;
+      margin:0 auto 14px;
+      border-radius:23px;
+      color:#05111d;
+      background:linear-gradient(135deg,var(--cyan),var(--purple));
+      font-size:38px;
+      box-shadow:0 12px 34px rgba(91,124,255,.32);
+    }
+
+    .modal h2{margin:0;font-size:31px}
+    .modal p{color:#aebfd4}
+    .name-input{
+      width:min(340px,100%);
+      margin:10px auto 17px;
+      text-align:center;
+      font-weight:900;
+    }
+
+    .reward-stars{font-size:35px;letter-spacing:5px}
+    .reward-xp{font-size:25px;color:var(--cyan);font-weight:1000}
+
+    .toast{
+      position:fixed;
+      right:23px;bottom:23px;
+      z-index:110;
+      max-width:360px;
+      padding:12px 15px;
+      color:white;
+      border:1px solid #365273;
+      border-radius:12px;
+      background:#11223b;
+      box-shadow:0 14px 38px rgba(0,0,0,.35);
+      opacity:0;
+      transform:translateY(25px);
+      pointer-events:none;
+      transition:.23s;
+    }
+
+    .toast.show{opacity:1;transform:none}
+
+    .confetti{
+      position:fixed;
+      top:-20px;
+      z-index:120;
+      width:10px;height:15px;
+      pointer-events:none;
+      animation:fall 1.8s linear forwards;
+    }
+
+    @keyframes fall{
+      to{transform:translate(var(--drift),105vh) rotate(720deg);opacity:.2}
+    }
+
+
+    .camera-choice{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .pipeline-builder{
+      display:grid;
+      grid-template-columns:1fr 38px 1fr 38px 1fr;
+      gap:10px;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    .pipeline-slot{
+      padding:14px;
+      border:1px solid #314c6d;
+      border-radius:13px;
+      background:#0a1729;
+    }
+
+    .pipeline-slot b{
+      display:block;
+      margin-bottom:7px;
+      color:#cfe4ff;
+    }
+
+    .pipeline-arrow{
+      text-align:center;
+      color:var(--cyan);
+      font-size:27px;
+      font-weight:1000;
+    }
+
+    .pipeline-status{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .pipeline-chip{
+      padding:7px 10px;
+      border:1px solid #315171;
+      border-radius:999px;
+      color:#bad0e8;
+      background:#0b192c;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .guess-hud{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .guess-options{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:9px;
+      margin-top:12px;
+    }
+
+    .guess-option{
+      padding:10px 8px;
+      border:1px solid #34516f;
+      border-radius:10px;
+      color:#d4e5f7;
+      background:#10213a;
+      font-weight:900;
+    }
+
+    .guess-option:hover{
+      border-color:var(--cyan);
+      color:white;
+    }
+
+    .guess-option:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .bonus-reward{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 10px;
+      border-radius:999px;
+      color:#2c1c00;
+      background:linear-gradient(135deg,#ffd761,#ffad57);
+      font-size:12px;
+      font-weight:1000;
+    }
+
+    .aero-control-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin:13px 0;
+    }
+
+    .aero-control{
+      padding:12px;
+      border:1px solid #2e4a69;
+      border-radius:12px;
+      background:#0b192c;
+    }
+
+    .aero-control label{
+      display:block;
+      margin-bottom:7px;
+      color:#cfe1f5;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .aero-control input[type="range"],
+    .aero-control select{width:100%}
+
+    .camera-overlay{
+      position:fixed;
+      inset:0;
+      z-index:150;
+      display:none;
+      place-items:center;
+      padding:18px;
+      background:rgba(2,7,16,.84);
+      backdrop-filter:blur(12px);
+    }
+
+    .camera-overlay.show{display:grid}
+
+    .camera-modal{
+      width:min(760px,100%);
+      padding:19px;
+      border:1px solid #3b5d80;
+      border-radius:20px;
+      background:linear-gradient(145deg,#132641,#0c192e);
+      box-shadow:0 28px 80px rgba(0,0,0,.58);
+    }
+
+    .camera-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .camera-head h2{margin:0}
+
+    .camera-video-frame{
+      min-height:300px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      border:1px solid #345371;
+      border-radius:15px;
+      background:#050b14;
+    }
+
+    #cameraVideo{
+      display:block;
+      max-width:100%;
+      max-height:68vh;
+      transform:scaleX(1);
+    }
+
+    .camera-note{
+      margin:10px 0 0;
+      color:#9db2ca;
+      font-size:12px;
+    }
+
+    .bonus-complete{
+      border-color:rgba(78,224,160,.55)!important;
+      box-shadow:0 0 25px rgba(78,224,160,.08);
+    }
+
+    @media(max-width:760px){
+      .pipeline-builder{grid-template-columns:1fr}
+      .pipeline-arrow{transform:rotate(90deg)}
+      .guess-options{grid-template-columns:1fr 1fr}
+      .aero-control-grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:1050px){
+      .game-shell{grid-template-columns:1fr}
+      .sidebar{position:relative;height:auto}
+      .stage-map{grid-template-columns:repeat(2,1fr)}
+      .stage-map::before{display:none}
+      .main{padding:18px 16px 60px}
+      .stage-hero{grid-template-columns:1fr}
+      .knowledge-grid,.field-grid{grid-template-columns:1fr}
+      .filter-controls{grid-template-columns:1fr 1fr}
+    }
+
+    @media(max-width:760px){
+      .top-hud{position:relative;top:0}
+      .grid-2,.grid-3{grid-template-columns:1fr}
+      .quest-flow{grid-template-columns:1fr 1fr}
+      .compare-row{grid-template-columns:1fr}
+      .operator{transform:rotate(90deg)}
+      .stage-map{grid-template-columns:1fr}
+      .achievement-list{grid-template-columns:1fr}
+      .filter-controls{grid-template-columns:1fr}
+      .stage-hero{padding:24px 19px}
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">M×I</div>
+        <div>
+          <strong>Matrix Image Quest</strong>
+          <small>우주 이미지 탐험 학습 게임</small>
+        </div>
+      </div>
+
+      <div class="pilot-card">
+        <div class="pilot-top">
+          <div class="avatar">🧑‍🚀</div>
+          <div>
+            <div class="pilot-name" id="pilotName">탐험가</div>
+            <div class="pilot-rank" id="pilotRank">Lv.1 픽셀 견습생</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <span id="xpText">XP 0 / 250</span>
+          <span id="totalXpText">총 0 XP</span>
+        </div>
+        <div class="xp-bar"><span id="xpBar"></span></div>
+        <div class="stats">
+          <div class="stat"><b id="starCount">0</b><small>별</small></div>
+          <div class="stat"><b id="badgeCount">0</b><small>배지</small></div>
+          <div class="stat"><b id="stageCount">0/10</b><small>완료</small></div>
+        </div>
+      </div>
+
+      <div class="map-title">Mission Map</div>
+      <div class="stage-map" id="stageMap"></div>
+
+      <div class="map-title">Game Control</div>
+      <div class="side-actions">
+        <button id="achievementBtn">🏅 배지</button>
+        <button id="soundBtn">🔊 소리 ON</button>
+        <button id="saveBtn">💾 저장</button>
+        <button id="resetBtn">↻ 초기화</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="top-hud">
+        <div class="hud-left">
+          <span class="hud-chip">🚀 현재 미션: <b id="currentMissionName">튜토리얼 정거장</b></span>
+          <span class="hud-chip">⭐ 연속 완료: <b id="streakText">0</b></span>
+        </div>
+        <div class="hud-right">
+          <span class="hud-chip">자동 저장됨</span>
+          <button class="icon-btn" id="prevStageBtn" title="이전 스테이지">←</button>
+          <button class="icon-btn" id="nextStageBtn" title="다음 스테이지">→</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- Stage 1 -->
+        <section class="stage-screen" data-stage="1">
+          <div class="stage-hero">
+            <div>
+              <span class="chapter">STAGE 01 · TUTORIAL</span>
+              <h1>튜토리얼 정거장</h1>
+              <p>우주 이미지 분석선에 탑승했습니다. 먼저 NumPy와 Matplotlib의 역할을 구분해 분석 장비를 활성화하세요.</p>
+            </div>
+            <div class="reward-preview">
+              <h3>🎁 미션 보상</h3>
+              <div class="reward-list">
+                <div class="reward-line"><span>경험치</span><b>+100 XP</b></div>
+                <div class="reward-line"><span>별</span><b>⭐ 1개</b></div>
+                <div class="reward-line"><span>해금</span><b>행렬 제련소</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quest-flow">
+            <div class="flow-step"><span>1</span><div><b>지식 스캔</b><small>핵심 원리 확인</small></div></div>
+            <div class="flow-step"><span>2</span><div><b>장비 연결</b><small>직접 선택</small></div></div>
+            <div class="flow-step"><span>3</span><div><b>미션 판정</b><small>정답 확인</small></div></div>
+            <div class="flow-step"><span>4</span><div><b>현장 기록</b><small>실생활 연결</small></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">📡</div><div><h2>지식 스캔</h2><p>두 라이브러리는 서로 다른 역할을 담당합니다.</p></div></div>
+            </div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>NumPy</b><p>숫자 배열 생성, 행렬 연산, 이미지 픽셀 계산을 담당합니다.</p></div>
+              <div class="knowledge-tile"><b>Matplotlib</b><p>행렬이나 계산 결과를 이미지와 그래프로 화면에 표시합니다.</p></div>
+              <div class="knowledge-tile"><b>이미지 배열</b><p>이미지는 결국 행과 열에 배치된 픽셀 숫자들의 집합입니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">A = np.array([[1, 2], [3, 4]])
+plt.imshow(A)
+plt.show()</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">🎮</div><div><h2>장비 연결 미션</h2><p>각 기능에 알맞은 라이브러리를 선택하세요.</p></div></div>
+            </div>
+            <div class="mission-box"><b>MISSION</b><p>세 항목을 모두 정확히 연결하면 정거장 출입 코드가 해제됩니다.</p></div>
+            <div class="grid-3" style="margin-top:14px">
+              <div class="tool-panel"><h3>배열 생성</h3><select id="libArray"><option value="">선택</option><option>NumPy</option><option>Matplotlib</option></select></div>
+              <div class="tool-panel"><h3>행렬곱 계산</h3><select id="libDot"><option value="">선택</option><option>NumPy</option><option>Matplotlib</option></select></div>
+              <div class="tool-panel"><h3>이미지 출력</h3><select id="libShow"><option value="">선택</option><option>NumPy</option><option>Matplotlib</option></select></div>
+            </div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage1">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">배열과 계산은 NumPy, 화면 출력은 Matplotlib이 담당합니다.</div>
+            <div class="answer-box"><b>모범답안:</b> 배열 생성 = NumPy, 행렬곱 = NumPy, 이미지 출력 = Matplotlib</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2><p>라이브러리가 실제 분야에서 쓰이는 방식입니다.</p></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🛰️</div><b>위성 데이터 분석</b><p>위성 센서의 수많은 측정값을 NumPy 배열로 계산하고 지표 영상을 시각화합니다.</p></div>
+              <div class="field-card"><div class="emoji">🔬</div><b>과학 실험</b><p>시간에 따른 온도·압력·속도 데이터를 배열에 저장하고 그래프로 분석합니다.</p></div>
+              <div class="field-card"><div class="emoji">🤖</div><b>인공지능</b><p>학습 데이터와 가중치를 행렬로 계산하고 결과를 그래프로 확인합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 2 -->
+        <section class="stage-screen" data-stage="2">
+          <div class="stage-hero">
+            <div>
+              <span class="chapter">STAGE 02 · MATRIX FORGE</span>
+              <h1>행렬 제련소</h1>
+              <p>두 에너지 행렬을 결합해 우주선 좌표 계산 장치를 가동하세요. 덧셈과 행렬곱은 서로 다른 규칙을 사용합니다.</p>
+            </div>
+            <div class="reward-preview">
+              <h3>🎁 미션 보상</h3>
+              <div class="reward-list">
+                <div class="reward-line"><span>경험치</span><b>+120 XP</b></div>
+                <div class="reward-line"><span>별</span><b>⭐ 1개</b></div>
+                <div class="reward-line"><span>배지 조건</span><b>행렬 제련사</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🧠</div><div><h2>연산 규칙</h2><p>덧셈은 위치별 계산, 행렬곱은 행과 열의 내적입니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>행렬 덧셈</b><p>같은 위치의 원소끼리 더합니다. 두 행렬의 크기가 같아야 합니다.</p></div>
+              <div class="knowledge-tile"><b>행렬 뺄셈</b><p>같은 위치의 원소끼리 뺍니다.</p></div>
+              <div class="knowledge-tile"><b>행렬곱</b><p>첫 행렬의 한 행과 두 번째 행렬의 한 열을 곱해 더합니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">(AB)[i,j] = Σ A[i,k] × B[k,j]</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">⚒️</div><div><h2>행렬 제련 실습</h2><p>숫자를 바꾸면 결과가 즉시 갱신됩니다.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>A=[[1,2],[3,4]], B=[[5,6],[7,8]]로 맞춘 뒤 행렬곱을 선택해 [[19,22],[43,50]]을 만드세요.</p></div>
+            <div class="grid-3" style="margin-top:14px">
+              <div class="tool-panel"><h3>행렬 A</h3><div class="matrix-input" id="matrixA"><input type="number" value="1"><input type="number" value="2"><input type="number" value="3"><input type="number" value="4"></div></div>
+              <div class="tool-panel"><h3>행렬 B</h3><div class="matrix-input" id="matrixB"><input type="number" value="5"><input type="number" value="6"><input type="number" value="7"><input type="number" value="8"></div></div>
+              <div class="tool-panel"><h3>연산 결과</h3><select id="matrixOp"><option value="add">A + B</option><option value="sub">A - B</option><option value="dot">A × B</option></select><div class="matrix-output" id="matrixResult"></div></div>
+            </div>
+            <div class="result-note" id="matrixFormula"></div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage2">미션 판정</button>
+              <button class="btn btn-soft" id="matrixReset">미션 값 복원</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">연산 메뉴에서 A × B를 선택하세요. 왼쪽 위 값은 1×5 + 2×7입니다.</div>
+            <div class="answer-box"><pre>A × B =
+[[19, 22],
+ [43, 50]]
+
+왼쪽 위: 1×5 + 2×7 = 19</pre></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🧭</div><b>좌표계 변환</b><p>드론과 위성의 방향·위치를 다른 좌표계로 변환합니다.</p></div>
+              <div class="field-card"><div class="emoji">🎮</div><b>3D 그래픽</b><p>물체의 회전, 이동, 화면 투영을 변환 행렬로 계산합니다.</p></div>
+              <div class="field-card"><div class="emoji">🧠</div><b>신경망</b><p>입력 행렬과 가중치 행렬을 곱해 다음 층의 값을 계산합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 3 -->
+        <section class="stage-screen" data-stage="3">
+          <div class="stage-hero">
+            <div>
+              <span class="chapter">STAGE 03 · PIXEL CAVE</span>
+              <h1>픽셀 동굴</h1>
+              <p>어두운 동굴 지도를 복원하려면 밝기 행렬을 조정해야 합니다. 0과 255가 어떤 색인지 기억하세요.</p>
+            </div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+120 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>해금</span><b>하트 조립실</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">💡</div><div><h2>밝기 코드</h2><p>흑백 이미지는 픽셀마다 숫자 하나를 저장합니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>0</b><p>빛의 세기가 가장 작아 검정색으로 표시됩니다.</p></div>
+              <div class="knowledge-tile"><b>128 부근</b><p>중간 정도 밝기의 회색입니다.</p></div>
+              <div class="knowledge-tile"><b>255</b><p>빛의 세기가 가장 커 흰색으로 표시됩니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">흑백 이미지 shape = (높이, 너비)</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🎛️</div><div><h2>밝기 복원 실습</h2><p>셀을 선택하고 슬라이더로 값을 수정하세요.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>왼쪽 위 픽셀을 0으로, 오른쪽 아래 픽셀을 255로 설정하세요.</p></div>
+            <div class="grid-2" style="margin-top:14px">
+              <div class="tool-panel">
+                <div class="controls"><label>선택 셀 밝기 <input id="grayValue" type="range" min="0" max="255" value="20"></label><b id="grayLabel">20</b></div>
+                <div class="value-grid" id="grayGrid"></div>
+              </div>
+              <div><div class="canvas-frame"><canvas id="grayCanvas" width="400" height="350"></canvas></div><div class="result-note">선택한 숫자가 실제 픽셀 밝기로 변환됩니다.</div></div>
+            </div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage3">미션 판정</button>
+              <button class="btn btn-soft" id="grayReset">초기화</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">행렬의 첫 번째 셀은 왼쪽 위, 마지막 셀은 오른쪽 아래입니다.</div>
+            <div class="answer-box">왼쪽 위 값 0 → 검정색, 오른쪽 아래 값 255 → 흰색입니다.</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🩻</div><b>X선 영상</b><p>밝기 차이로 뼈와 조직을 구분합니다.</p></div>
+              <div class="field-card"><div class="emoji">📄</div><b>문자 인식</b><p>문서를 흑백화해 글자와 배경을 분리합니다.</p></div>
+              <div class="field-card"><div class="emoji">🌕</div><b>달 표면 영상</b><p>명암 차이를 이용해 분화구와 지형을 분석합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 4 -->
+        <section class="stage-screen" data-stage="4">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 04 · HEART WORKSHOP</span><h1>하트 조립실</h1><p>0과 1로 이루어진 픽셀 격자를 편집해 대칭 구조를 가진 통신 아이콘을 완성하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+130 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>배지 조건</span><b>픽셀 조각가</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🔲</div><div><h2>이진 이미지</h2><p>두 값만으로도 형태를 표현할 수 있습니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>행과 열</b><p>행은 위→아래, 열은 왼쪽→오른쪽 픽셀 위치입니다.</p></div>
+              <div class="knowledge-tile"><b>0과 1</b><p>이 앱에서는 0을 하트 색, 1을 흰색으로 표시합니다.</p></div>
+              <div class="knowledge-tile"><b>좌우 대칭</b><p>왼쪽과 오른쪽 대응 위치의 값이 같아야 합니다.</p></div>
+            </div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🧩</div><div><h2>픽셀 조립 실습</h2><p>셀을 클릭하면 0과 1이 바뀝니다.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>하트 모양을 좌우 대칭으로 만들고, 하트 픽셀이 10개 이상이 되도록 하세요.</p></div>
+            <div class="grid-2" style="margin-top:14px">
+              <div class="tool-panel">
+                <div class="controls"><label>하트 색 <input type="color" id="heartColor" value="#ff4f74"></label><button class="btn btn-soft" id="heartReset">기본 하트</button><button class="btn btn-red" id="heartClear">모두 지우기</button></div>
+                <div class="heart-editor" id="heartEditor"></div>
+              </div>
+              <div><div class="canvas-frame"><canvas id="heartCanvas" width="420" height="360"></canvas></div><pre id="heartMatrixText"></pre></div>
+            </div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage4">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">각 행을 왼쪽부터 읽었을 때와 오른쪽부터 읽었을 때 값의 순서가 같아야 합니다.</div>
+            <div class="answer-box"><pre>heart = np.array([
+    [1, 0, 0, 1, 0, 0, 1],
+    [0, 1, 1, 0, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [1, 0, 1, 1, 1, 0, 1],
+    [1, 1, 0, 1, 0, 1, 1],
+    [1, 1, 1, 0, 1, 1, 1]
+])</pre></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">💡</div><b>LED 전광판</b><p>켜짐과 꺼짐을 0과 1로 저장해 글자와 그림을 표시합니다.</p></div>
+              <div class="field-card"><div class="emoji">🎮</div><b>픽셀 아트</b><p>작은 격자에 색을 배치해 캐릭터와 아이콘을 만듭니다.</p></div>
+              <div class="field-card"><div class="emoji">🔳</div><b>QR 코드</b><p>검정·흰색 패턴에 정보를 저장합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 5 -->
+        <section class="stage-screen" data-stage="5">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 05 · RGB REACTOR</span><h1>RGB 반응로</h1><p>세 개의 빛 에너지 채널을 조합해 목표 색상인 노란색을 만들어 반응로를 재가동하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+130 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>해금</span><b>색상 합성 경기장</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌈</div><div><h2>RGB 가산 혼합</h2><p>화면은 빨강·초록·파랑 빛의 세기를 조합합니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>[1,0,0]</b><p>빨간빛만 최대로 켠 빨간색입니다.</p></div>
+              <div class="knowledge-tile"><b>[0,1,0]</b><p>초록빛만 최대로 켠 초록색입니다.</p></div>
+              <div class="knowledge-tile"><b>[0,0,1]</b><p>파란빛만 최대로 켠 파란색입니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">노랑 = [1, 1, 0] = 빨강 + 초록</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🎚️</div><div><h2>색상 조합 실습</h2><p>슬라이더를 조절하면 색이 실시간으로 변합니다.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>R=1, G=1, B=0으로 설정해 노란색을 만드세요.</p></div>
+            <div class="grid-2" style="margin-top:14px">
+              <div class="tool-panel">
+                <div class="controls"><label>R <input id="rRange" type="range" min="0" max="1" step=".01" value="1"></label><b id="rText">1.00</b></div>
+                <div class="controls"><label>G <input id="gRange" type="range" min="0" max="1" step=".01" value="0"></label><b id="gText">0.00</b></div>
+                <div class="controls"><label>B <input id="bRange" type="range" min="0" max="1" step=".01" value="0"></label><b id="bText">0.00</b></div>
+                <div class="formula" id="rgbValue"></div>
+              </div>
+              <div><div id="rgbPreview" style="height:270px;border-radius:15px;border:1px solid #34516f"></div></div>
+            </div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage5">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">노란색은 빨간빛과 초록빛을 모두 켜고 파란빛을 끕니다.</div>
+            <div class="answer-box"><b>모범답안:</b> [R,G,B] = [1,1,0]</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">📱</div><b>스마트폰 화면</b><p>작은 RGB 소자가 다양한 색을 만듭니다.</p></div>
+              <div class="field-card"><div class="emoji">📷</div><b>디지털 카메라</b><p>센서가 빛을 RGB 성분으로 기록합니다.</p></div>
+              <div class="field-card"><div class="emoji">🛰️</div><b>위성 다중분광</b><p>서로 다른 파장 채널을 RGB에 배치해 지표를 분석합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 6 -->
+        <section class="stage-screen" data-stage="6">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 06 · BLEND ARENA</span><h1>색상 합성 경기장</h1><p>빨간 하트와 파란 하트를 더하고 곱해 서로 다른 색상 연산 결과를 모두 확인하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+140 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>배지 조건</span><b>색상 연금술사</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">⚗️</div><div><h2>색상 연산 규칙</h2><p>덧셈과 원소별 곱셈은 결과가 완전히 다릅니다.</p></div></div></div>
+            <div class="grid-2">
+              <div class="knowledge-tile"><b>덧셈</b><p>[1,0,0]+[0,0,1]=[1,0,1] → 자홍색</p></div>
+              <div class="knowledge-tile"><b>원소별 곱셈</b><p>[1,0,0]×[0,0,1]=[0,0,0] → 검정색</p></div>
+            </div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🥊</div><div><h2>합성 대결 실습</h2><p>두 연산을 모두 확인해야 미션이 완료됩니다.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>덧셈 결과와 곱셈 결과를 각각 한 번 이상 확인하세요.</p></div>
+            <div class="controls"><button class="btn btn-primary" id="showAdd">덧셈 보기</button><button class="btn btn-purple" id="showMul">곱셈 보기</button></div>
+            <div class="compare-row">
+              <div><div class="mini-title">red_heart</div><div class="canvas-frame"><canvas id="redCanvas" width="270" height="230"></canvas></div></div>
+              <div class="operator" id="blendOp">+</div>
+              <div><div class="mini-title">blue_heart</div><div class="canvas-frame"><canvas id="blueCanvas" width="270" height="230"></canvas></div></div>
+              <div class="operator">=</div>
+              <div><div class="mini-title" id="blendTitle">add_heart</div><div class="canvas-frame"><canvas id="blendCanvas" width="270" height="230"></canvas></div></div>
+            </div>
+            <div class="result-note" id="blendNote"></div>
+            <pre id="blendMatrix"></pre>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage6">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">먼저 덧셈 버튼, 다음에 곱셈 버튼을 눌러 두 결과를 모두 확인하세요.</div>
+            <div class="answer-box">덧셈 결과는 자홍색 하트, 곱셈 결과는 검정색 하트입니다.</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🎬</div><b>영상 합성</b><p>여러 장면의 색과 밝기를 합쳐 특수효과를 만듭니다.</p></div>
+              <div class="field-card"><div class="emoji">🎭</div><b>마스크 처리</b><p>이미지와 0~1 마스크를 곱해 특정 영역만 남깁니다.</p></div>
+              <div class="field-card"><div class="emoji">🗺️</div><b>영상 융합</b><p>여러 센서 영상을 합쳐 숨겨진 정보를 강조합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 7 -->
+        <section class="stage-screen" data-stage="7">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 07 · LIGHT LAB</span><h1>광도 조절 연구소</h1><p>스칼라 k를 이용해 하트를 어둡게 만들고 밝게 만들어 우주 카메라 노출 장치를 보정하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+140 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>해금</span><b>필터 행성</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">☀️</div><div><h2>스칼라 곱</h2><p>행렬 전체의 모든 픽셀값에 같은 숫자를 곱합니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>0 ≤ k &lt; 1</b><p>RGB 값이 작아져 이미지가 어두워집니다.</p></div>
+              <div class="knowledge-tile"><b>k = 1</b><p>원본 값이 그대로 유지됩니다.</p></div>
+              <div class="knowledge-tile"><b>k &gt; 1</b><p>RGB 값이 커져 이미지가 밝아집니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">result = np.clip(image × k, 0, 1)</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🔆</div><div><h2>노출 보정 실습</h2><p>어두운 상태와 밝은 상태를 모두 만들어 보세요.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>k≤0.5인 상태와 k≥1.5인 상태를 각각 한 번 이상 확인하세요.</p></div>
+            <div class="slider-row" style="margin-top:15px"><b>k =</b><input id="scalarRange" type="range" min="0" max="2" step=".05" value="1"><b id="scalarValue">1.00</b></div>
+            <div class="grid-3" style="margin-top:15px">
+              <div><div class="mini-title">기준 이미지</div><div class="canvas-frame"><canvas id="scalarBase" width="300" height="250"></canvas></div></div>
+              <div><div class="mini-title">스칼라 곱 결과</div><div class="canvas-frame"><canvas id="scalarCanvas" width="300" height="250"></canvas></div></div>
+              <div class="tool-panel"><h3>분석 로그</h3><p id="scalarNote"></p><div class="formula" id="scalarFormula"></div></div>
+            </div>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage7">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">슬라이더를 0.5 이하로 한 번, 1.5 이상으로 한 번 이동하세요.</div>
+            <div class="answer-box">[0.65,0,0]×0.5=[0.325,0,0], [0.65,0,0]×1.5=[0.975,0,0]</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">📸</div><b>카메라 노출 보정</b><p>어둡거나 밝게 촬영된 사진을 보정합니다.</p></div>
+              <div class="field-card"><div class="emoji">🌙</div><b>야간 영상</b><p>어두운 영상의 픽셀값을 키워 물체를 보기 쉽게 합니다.</p></div>
+              <div class="field-card"><div class="emoji">🔭</div><b>천체 관측</b><p>빛이 약한 천체 영상의 밝기와 대비를 높입니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 8 -->
+        <section class="stage-screen" data-stage="8">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 08 · FILTER PLANET</span><h1>필터 행성</h1><p>직접 사진을 업로드하거나 예시 이미지를 사용해 모자이크, 블러, 흑백, 반전, 밝기 필터를 실험하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+180 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 2개</b></div><div class="reward-line"><span>배지 조건</span><b>필터 마법사</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌀</div><div><h2>필터 원리</h2><p>필터는 픽셀값을 일정한 규칙으로 다시 계산합니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>모자이크</b><p>한 블록 안의 픽셀들을 평균 RGB 하나로 통일합니다.</p></div>
+              <div class="knowledge-tile"><b>평균 블러</b><p>현재 픽셀을 주변 픽셀들의 평균으로 바꿉니다.</p></div>
+              <div class="knowledge-tile"><b>흑백·반전</b><p>RGB 가중 평균 또는 255-RGB 계산을 사용합니다.</p></div>
+            </div>
+            <div class="formula" style="margin-top:13px">모자이크: block_color = 평균(RGB)
+블러: output[y,x] = 주변 픽셀의 평균
+흑백: gray = 0.299R + 0.587G + 0.114B</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🖼️</div><div><h2>사진 필터 실습</h2><p>선택한 사진은 브라우저 내부에서만 처리됩니다.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>사진을 준비하고 모자이크와 블러를 각각 한 번 이상 적용한 뒤, 원본 이미지에서 픽셀 하나를 클릭해 RGB 값을 확인하세요.</p></div>
+            <div class="controls camera-choice">
+              <input id="imageUpload" type="file" accept="image/*">
+              <button class="btn btn-primary camera-open-btn" data-camera-target="filter">📷 카메라로 촬영</button>
+              <button class="btn btn-soft" id="sampleImageBtn">예시 이미지</button>
+              <button class="btn btn-green" id="downloadFilteredBtn">결과 저장</button>
+            </div>
+            <div class="filter-controls">
+              <div class="filter-control"><label>필터 선택</label><select id="filterType"><option value="original">원본</option><option value="mosaic">모자이크</option><option value="blur">블러</option><option value="grayscale">흑백</option><option value="invert">색 반전</option><option value="brightness">밝기</option></select></div>
+              <div class="filter-control" data-for="mosaic"><label>블록 크기 <span id="mosaicValue">12</span>px</label><input id="mosaicSize" type="range" min="2" max="50" value="12"></div>
+              <div class="filter-control" data-for="blur"><label>블러 반경 <span id="blurValue">4</span>px</label><input id="blurRadius" type="range" min="1" max="18" value="4"></div>
+              <div class="filter-control" data-for="brightness"><label>밝기 k <span id="filterBrightnessValue">1.20</span></label><input id="filterBrightness" type="range" min="0" max="2" step=".05" value="1.2"></div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <div class="mini-title">원본 이미지</div>
+                <div class="canvas-frame"><canvas id="uploadedOriginalCanvas" width="520" height="320"></canvas></div>
+                <div class="pixel-info"><div class="pixel-swatch" id="samplePixelSwatch"></div><span id="samplePixelText">원본 이미지를 클릭하면 좌표와 RGB 값이 표시됩니다.</span></div>
+              </div>
+              <div>
+                <div class="mini-title" id="filteredImageTitle">필터 결과</div>
+                <div class="canvas-frame"><canvas id="filteredCanvas" width="520" height="320"></canvas></div>
+                <div class="result-note" id="filterTheory"></div>
+              </div>
+            </div>
+            <pre id="filterCode" style="margin-top:12px"></pre>
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage8">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">예시 이미지 버튼을 눌러도 됩니다. 필터 선택에서 모자이크와 블러를 각각 선택하고 원본 캔버스를 클릭하세요.</div>
+            <div class="answer-box">모자이크는 블록 평균, 블러는 주변 평균입니다. 강도를 크게 할수록 세부 정보가 더 많이 사라집니다.</div>
+          </div>
+
+          <div class="game-card" id="pipelineBonusCard">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">🔗</div><div><h2>보너스 미션: 필터 조합 파이프라인</h2><p>필터를 여러 단계로 연결하고 순서에 따른 결과를 확인하세요.</p></div></div>
+              <span class="bonus-reward">BONUS +100 XP · ⭐1</span>
+            </div>
+            <div class="mission-box"><b>BONUS MISSION</b><p>사진을 준비한 뒤 <b>흑백 → 블러 → 밝기</b> 순서로 연결해 통신 영상을 안정화하세요.</p></div>
+            <div class="pipeline-builder">
+              <div class="pipeline-slot"><b>1단계</b><select id="pipelineStep1"><option value="none">선택 안 함</option><option value="grayscale">흑백</option><option value="blur">블러</option><option value="brightness">밝기</option><option value="invert">색 반전</option><option value="mosaic">모자이크</option></select></div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-slot"><b>2단계</b><select id="pipelineStep2"><option value="none">선택 안 함</option><option value="grayscale">흑백</option><option value="blur">블러</option><option value="brightness">밝기</option><option value="invert">색 반전</option><option value="mosaic">모자이크</option></select></div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-slot"><b>3단계</b><select id="pipelineStep3"><option value="none">선택 안 함</option><option value="grayscale">흑백</option><option value="blur">블러</option><option value="brightness">밝기</option><option value="invert">색 반전</option><option value="mosaic">모자이크</option></select></div>
+            </div>
+            <div class="pipeline-status">
+              <span class="pipeline-chip">블러 반경 3px</span>
+              <span class="pipeline-chip">밝기 k=1.25</span>
+              <span class="pipeline-chip">모자이크 선택 시 14px</span>
+            </div>
+            <div class="grid-2" style="margin-top:14px">
+              <div><div class="mini-title">파이프라인 입력</div><div class="canvas-frame"><canvas id="pipelineSourceCanvas" width="520" height="320"></canvas></div></div>
+              <div><div class="mini-title">파이프라인 결과</div><div class="canvas-frame"><canvas id="pipelineCanvas" width="520" height="320"></canvas></div></div>
+            </div>
+            <pre id="pipelineCode" style="margin-top:12px">필터 순서를 선택하고 적용하세요.</pre>
+            <div class="mission-actions">
+              <button class="btn btn-purple" id="applyPipelineBtn">파이프라인 적용</button>
+              <button class="btn btn-primary" id="checkPipelineBtn">보너스 판정</button>
+              <button class="btn btn-soft" id="pipelineHintBtn">힌트</button>
+              <div class="mission-feedback" id="pipelineFeedback"></div>
+            </div>
+            <div class="hint-box" id="pipelineHint">영상 처리에서는 앞 단계의 결과가 다음 단계의 입력이 됩니다. 1단계 흑백, 2단계 블러, 3단계 밝기로 설정하세요.</div>
+          </div>
+
+          <div class="game-card" id="guessBonusCard">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">🕵️</div><div><h2>보너스 미션: 필터 추리 게임</h2><p>결과 이미지만 보고 어떤 필터가 적용되었는지 맞히세요.</p></div></div>
+              <span class="bonus-reward">BONUS +120 XP · ⭐1</span>
+            </div>
+            <div class="mission-box"><b>BONUS MISSION</b><p>5라운드 중 3라운드 이상 정답을 맞혀 필터 탐정 자격을 획득하세요.</p></div>
+            <div class="guess-hud">
+              <div><b>라운드:</b> <span id="guessRoundText">0 / 5</span>　<b>점수:</b> <span id="guessScoreText">0</span></div>
+              <button class="btn btn-gold" id="startGuessBtn">추리 게임 시작</button>
+            </div>
+            <div class="grid-2">
+              <div><div class="mini-title">원본</div><div class="canvas-frame"><canvas id="guessSourceCanvas" width="500" height="310"></canvas></div></div>
+              <div><div class="mini-title">정체불명 필터 결과</div><div class="canvas-frame"><canvas id="guessCanvas" width="500" height="310"></canvas></div></div>
+            </div>
+            <div class="guess-options">
+              <button class="guess-option" data-guess="mosaic" disabled>모자이크</button>
+              <button class="guess-option" data-guess="blur" disabled>블러</button>
+              <button class="guess-option" data-guess="grayscale" disabled>흑백</button>
+              <button class="guess-option" data-guess="invert" disabled>색 반전</button>
+              <button class="guess-option" data-guess="brightness" disabled>밝기</button>
+            </div>
+            <div class="result-note" id="guessFeedback">게임을 시작하면 문제가 표시됩니다.</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🔐</div><b>개인정보 보호</b><p>얼굴과 자동차 번호판을 모자이크 처리합니다.</p></div>
+              <div class="field-card"><div class="emoji">📷</div><b>사진 보정</b><p>블러와 밝기 조절로 배경·피부·노출을 보정합니다.</p></div>
+              <div class="field-card"><div class="emoji">🤖</div><b>AI 전처리</b><p>노이즈 제거와 흑백화로 특징을 찾기 쉽게 만듭니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 9 -->
+        <section class="stage-screen" data-stage="9">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 09 · TRANSFORM GATE</span><h1>변환 게이트</h1><p>직접 업로드한 사진의 RGB 픽셀 배열을 재배열해 회전·반전·전치 게이트를 모두 통과하세요.</p></div>
+            <div class="reward-preview"><h3>🎁 미션 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+160 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 1개</b></div><div class="reward-line"><span>해금</span><b>최종 보스</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🔄</div><div><h2>변환 규칙</h2><p>회전과 반전은 위치를, 색 반전은 값을 바꿉니다.</p></div></div></div>
+            <div class="knowledge-grid">
+              <div class="knowledge-tile"><b>회전</b><p>픽셀의 행·열 위치를 90° 또는 180° 방향으로 재배열합니다.</p></div>
+              <div class="knowledge-tile"><b>반전·전치</b><p>행 순서, 열 순서 또는 행과 열을 교환합니다.</p></div>
+              <div class="knowledge-tile"><b>색 반전</b><p>위치는 그대로 두고 각 RGB 채널을 255에서 뺍니다.</p></div>
+            </div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🚪</div><div><h2>사진 변환 게이트 실습</h2><p>직접 사진을 업로드하고 픽셀 배열의 위치와 값을 변환하세요.</p></div></div></div>
+            <div class="mission-box"><b>MISSION</b><p>사진을 업로드하거나 예시 사진을 불러온 뒤, 90° 회전·좌우 반전·색 반전을 각각 한 번 이상 확인하세요.</p></div>
+
+            <div class="controls camera-choice" style="margin-top:14px">
+              <input id="transformImageUpload" type="file" accept="image/*">
+              <button class="btn btn-primary camera-open-btn" data-camera-target="transform">📷 카메라로 촬영</button>
+              <button class="btn btn-soft" id="transformSampleBtn">예시 사진 불러오기</button>
+              <button class="btn btn-green" id="downloadTransformBtn">변환 결과 저장</button>
+            </div>
+
+            <div class="controls" id="transformButtons">
+              <button class="btn btn-soft" data-t="original">원본</button>
+              <button class="btn btn-soft" data-t="r90">90° 시계 방향</button>
+              <button class="btn btn-soft" data-t="r180">180° 회전</button>
+              <button class="btn btn-soft" data-t="lr">좌우 반전</button>
+              <button class="btn btn-soft" data-t="ud">상하 반전</button>
+              <button class="btn btn-soft" data-t="transpose">전치</button>
+              <button class="btn btn-soft" data-t="invert">색 반전</button>
+            </div>
+
+            <div class="grid-2" style="margin-top:14px">
+              <div>
+                <div class="mini-title">업로드한 원본 사진</div>
+                <div class="canvas-frame"><canvas id="transformOriginalCanvas" width="500" height="330"></canvas></div>
+                <div class="result-note" id="transformSourceInfo">사진을 준비하고 있습니다.</div>
+              </div>
+              <div>
+                <div class="mini-title" id="transformName">원본</div>
+                <div class="canvas-frame"><canvas id="transformCanvas" width="500" height="330"></canvas></div>
+                <div class="result-note" id="transformInfo"></div>
+              </div>
+            </div>
+
+            <pre id="transformCode" style="margin-top:12px"></pre>
+
+            <div class="mission-actions">
+              <button class="btn btn-primary mission-check" data-check="checkStage9">미션 판정</button>
+              <button class="btn btn-soft hint-btn">힌트</button>
+              <button class="btn btn-green answer-btn">해설 보기</button>
+              <div class="mission-feedback"></div>
+            </div>
+            <div class="hint-box">예시 사진을 사용해도 됩니다. 사진을 준비한 다음 90° 회전, 좌우 반전, 색 반전 버튼을 모두 눌러 보세요.</div>
+            <div class="answer-box"><b>모범 해설:</b> 회전과 좌우 반전은 RGB 값은 유지한 채 픽셀의 좌표를 재배열합니다. 색 반전은 좌표는 유지하고 각 채널을 <code>255-R</code>, <code>255-G</code>, <code>255-B</code>로 바꿉니다.</div>
+          </div>
+
+          <div class="game-card" id="aeroBonusCard">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">🛰️</div><div><h2>특별 작전: 우주 카메라 영상 복구</h2><p>촬영한 사진을 우주 탐사 영상이라고 가정하고 방향·노이즈·밝기를 보정하세요.</p></div></div>
+              <span class="bonus-reward">SPECIAL +180 XP · ⭐2</span>
+            </div>
+            <div class="mission-box"><b>AEROSPACE MISSION</b><p>사진을 준비한 뒤 <b>90° 시계 방향 회전</b>, <b>블러 반경 2px</b>, <b>밝기 k=1.30</b>을 적용해 지상국 전송 규격을 만족시키세요.</p></div>
+            <div class="controls camera-choice" style="margin-top:14px">
+              <input id="aeroImageUpload" type="file" accept="image/*">
+              <button class="btn btn-primary camera-open-btn" data-camera-target="aerospace">📷 카메라로 탐사 영상 촬영</button>
+              <button class="btn btn-soft" id="aeroSampleBtn">화성 탐사 예시</button>
+              <button class="btn btn-green" id="downloadAeroBtn">복구 영상 저장</button>
+            </div>
+            <div class="aero-control-grid">
+              <div class="aero-control"><label>방향 보정</label><select id="aeroRotation"><option value="original">회전 없음</option><option value="r90">90° 시계 방향</option><option value="r180">180° 회전</option><option value="lr">좌우 반전</option></select></div>
+              <div class="aero-control"><label>노이즈 완화 블러: <span id="aeroBlurText">0</span>px</label><input id="aeroBlur" type="range" min="0" max="8" value="0"></div>
+              <div class="aero-control"><label>밝기 계수: <span id="aeroBrightnessText">1.00</span></label><input id="aeroBrightness" type="range" min=".5" max="1.8" step=".05" value="1"></div>
+            </div>
+            <div class="grid-2">
+              <div><div class="mini-title">탐사 카메라 원본</div><div class="canvas-frame"><canvas id="aeroSourceCanvas" width="520" height="330"></canvas></div><div class="result-note" id="aeroSourceInfo"></div></div>
+              <div><div class="mini-title">지상국 전송용 복구 영상</div><div class="canvas-frame"><canvas id="aeroCanvas" width="520" height="330"></canvas></div><div class="result-note" id="aeroResultInfo">설정을 선택하고 복구를 실행하세요.</div></div>
+            </div>
+            <pre id="aeroCode" style="margin-top:12px"># 목표
+# 1. 90° 시계 방향 회전
+# 2. 평균 블러 반경 2
+# 3. 밝기 1.30배</pre>
+            <div class="mission-actions">
+              <button class="btn btn-purple" id="applyAeroBtn">영상 복구 실행</button>
+              <button class="btn btn-primary" id="checkAeroBtn">특별 작전 판정</button>
+              <button class="btn btn-soft" id="aeroHintBtn">힌트</button>
+              <div class="mission-feedback" id="aeroFeedback"></div>
+            </div>
+            <div class="hint-box" id="aeroHint">방향 보정은 r90, 블러는 2, 밝기는 1.30으로 설정한 뒤 영상 복구 실행을 누르세요.</div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌍</div><div><h2>현장 활용 로그</h2></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">📱</div><b>화면 자동 회전</b><p>기기 방향에 맞춰 화면 좌표와 이미지를 회전합니다.</p></div>
+              <div class="field-card"><div class="emoji">🤖</div><b>AI 데이터 증강</b><p>훈련 이미지를 회전·반전해 데이터 다양성을 늘립니다.</p></div>
+              <div class="field-card"><div class="emoji">🗺️</div><b>지도 정렬</b><p>드론·위성 영상을 지도 방향과 일치하도록 변환합니다.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stage 10 -->
+        <section class="stage-screen" data-stage="10">
+          <div class="stage-hero">
+            <div><span class="chapter">STAGE 10 · FINAL BOSS</span><h1>최종 보스: 노이즈 코어</h1><p>지금까지 배운 행렬과 이미지 처리 지식으로 노이즈 코어를 정지시키세요. 8문제 중 6문제 이상이면 승리합니다.</p></div>
+            <div class="reward-preview"><h3>🏆 최종 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+300 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 3개</b></div><div class="reward-line"><span>최종 칭호</span><b>이미지 탐험대장</b></div></div></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head">
+              <div class="card-title"><div class="card-icon">👾</div><div><h2>보스 퀴즈</h2><p>시작 버튼을 누르면 제한 시간 180초가 시작됩니다.</p></div></div>
+              <div class="timer" id="bossTimer">03:00</div>
+            </div>
+            <div class="mission-box"><b>FINAL MISSION</b><p>8문제 중 6문제 이상 정답을 맞히세요.</p></div>
+            <div class="controls"><button class="btn btn-gold" id="startBossBtn">보스전 시작</button></div>
+            <div class="quiz-grid" id="bossQuiz">
+              <div class="quiz-card" data-answer="b"><p>1. 흑백 이미지에서 값 0은?</p><label><input type="radio" name="q1" value="a"> 흰색</label><label><input type="radio" name="q1" value="b"> 검정색</label><label><input type="radio" name="q1" value="c"> 파란색</label></div>
+              <div class="quiz-card" data-answer="c"><p>2. RGB 배열의 마지막 차원 크기가 3인 이유는?</p><label><input type="radio" name="q2" value="a"> 이미지가 세 장이라서</label><label><input type="radio" name="q2" value="b"> 좌표축이 세 개라서</label><label><input type="radio" name="q2" value="c"> R, G, B 채널을 저장해서</label></div>
+              <div class="quiz-card" data-answer="a"><p>3. [1,0,0]+[0,0,1]은?</p><label><input type="radio" name="q3" value="a"> [1,0,1]</label><label><input type="radio" name="q3" value="b"> [0,0,0]</label><label><input type="radio" name="q3" value="c"> [1,1,1]</label></div>
+              <div class="quiz-card" data-answer="b"><p>4. [1,0,0]×[0,0,1]의 원소별 곱은?</p><label><input type="radio" name="q4" value="a"> [1,0,1]</label><label><input type="radio" name="q4" value="b"> [0,0,0]</label><label><input type="radio" name="q4" value="c"> [1,1,0]</label></div>
+              <div class="quiz-card" data-answer="c"><p>5. 이미지에 k=0.5를 곱하면?</p><label><input type="radio" name="q5" value="a"> 회전한다</label><label><input type="radio" name="q5" value="b"> 밝아진다</label><label><input type="radio" name="q5" value="c"> 어두워진다</label></div>
+              <div class="quiz-card" data-answer="a"><p>6. 모자이크 블록 크기를 크게 하면?</p><label><input type="radio" name="q6" value="a"> 세부 정보가 더 많이 사라진다</label><label><input type="radio" name="q6" value="b"> 해상도가 증가한다</label><label><input type="radio" name="q6" value="c"> 자동으로 밝아진다</label></div>
+              <div class="quiz-card" data-answer="b"><p>7. 평균 블러는 현재 픽셀을 무엇으로 바꾸는가?</p><label><input type="radio" name="q7" value="a"> 무조건 0</label><label><input type="radio" name="q7" value="b"> 주변 픽셀의 평균</label><label><input type="radio" name="q7" value="c"> 반대쪽 픽셀</label></div>
+              <div class="quiz-card" data-answer="c"><p>8. 전치 연산의 의미는?</p><label><input type="radio" name="q8" value="a"> 모든 값을 1로 바꿈</label><label><input type="radio" name="q8" value="b"> 색을 반전함</label><label><input type="radio" name="q8" value="c"> 행과 열을 서로 바꿈</label></div>
+            </div>
+            <div class="boss-score">
+              <div><small>보스전 점수</small><br><strong id="bossScoreText">0 / 8</strong></div>
+              <button class="btn btn-gold" id="gradeBossBtn" disabled>공격하기</button>
+            </div>
+            <div class="mission-actions">
+              <div class="mission-feedback" id="bossFeedback"></div>
+            </div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🏅</div><div><h2>업적 보관함</h2><p>게임 진행에 따라 배지가 자동으로 해금됩니다.</p></div></div></div>
+            <div class="achievement-list" id="achievementList"></div>
+          </div>
+
+          <div class="game-card">
+            <div class="card-head"><div class="card-title"><div class="card-icon">🌌</div><div><h2>탐험 기술 활용 지도</h2><p>게임에서 배운 기술은 다음 분야로 연결됩니다.</p></div></div></div>
+            <div class="field-grid">
+              <div class="field-card"><div class="emoji">🛰️</div><b>항공우주</b><p>위성 영상 보정, 자세 좌표 변환, 행성 표면 분석</p></div>
+              <div class="field-card"><div class="emoji">🏥</div><b>의료</b><p>X선·MRI 영상 강조, 노이즈 제거, 병변 탐지</p></div>
+              <div class="field-card"><div class="emoji">🚗</div><b>자율주행</b><p>카메라 전처리, 차선·보행자 인식</p></div>
+              <div class="field-card"><div class="emoji">📱</div><b>스마트폰</b><p>카메라 필터, 자동 회전, 얼굴 보정</p></div>
+              <div class="field-card"><div class="emoji">🏭</div><b>산업 검사</b><p>제품 결함 영상 분석과 품질 관리</p></div>
+              <div class="field-card"><div class="emoji">🤖</div><b>인공지능</b><p>CNN 입력 전처리, 데이터 증강, 특징 추출</p></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="modal">
+      <div class="modal-icon">🚀</div>
+      <h2>Matrix Image Quest</h2>
+      <p>행렬과 이미지 처리 기술을 배우며 10개의 우주 미션을 완료하세요. 미션을 통과하면 다음 스테이지가 해금됩니다.</p>
+      <input class="name-input" id="nameInput" maxlength="14" placeholder="탐험가 이름을 입력하세요" value="탐험가">
+      <div><button class="btn btn-primary" id="startGameBtn">탐험 시작</button></div>
+    </div>
+  </div>
+
+  <div class="reward-overlay" id="rewardOverlay">
+    <div class="modal">
+      <div class="modal-icon" id="rewardIcon">⭐</div>
+      <h2 id="rewardTitle">미션 완료!</h2>
+      <div class="reward-stars" id="rewardStars">⭐</div>
+      <p class="reward-xp" id="rewardXp">+100 XP</p>
+      <p id="rewardMessage">다음 스테이지가 해금되었습니다.</p>
+      <button class="btn btn-primary" id="rewardContinueBtn">계속 탐험</button>
+    </div>
+  </div>
+
+  <div class="reward-overlay" id="achievementOverlay">
+    <div class="modal" style="text-align:left">
+      <div class="card-head">
+        <div class="card-title"><div class="card-icon">🏅</div><div><h2>업적 보관함</h2><p>지금까지 획득한 배지를 확인하세요.</p></div></div>
+        <button class="icon-btn" id="closeAchievementBtn">×</button>
+      </div>
+      <div class="achievement-list" id="achievementModalList"></div>
+    </div>
+  </div>
+
+  <div class="camera-overlay" id="cameraOverlay">
+    <div class="camera-modal">
+      <div class="camera-head">
+        <div><h2>📷 카메라 촬영</h2><div style="color:#9db2ca;font-size:12px" id="cameraTargetText">학습용 사진을 촬영하세요.</div></div>
+        <button class="icon-btn" id="closeCameraBtn">×</button>
+      </div>
+      <div class="camera-video-frame">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+      </div>
+      <div class="controls" style="justify-content:center;margin-top:13px">
+        <button class="btn btn-primary" id="captureCameraBtn">사진 촬영</button>
+        <button class="btn btn-soft" id="switchCameraBtn">전면/후면 전환</button>
+      </div>
+      <p class="camera-note">브라우저에서 카메라 권한을 허용해야 합니다. 카메라가 차단되면 휴대폰의 기본 카메라 촬영 화면으로 전환됩니다.</p>
+      <input id="cameraFallbackInput" type="file" accept="image/*" capture="environment" hidden>
+      <canvas id="cameraCaptureCanvas" hidden></canvas>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const clone = m => m.map(r => r.map(v => Array.isArray(v) ? [...v] : v));
+  const clamp = (x,min=0,max=1) => Math.max(min,Math.min(max,x));
+
+  const stages = [
+    {id:1,name:"튜토리얼 정거장",sub:"NumPy와 Matplotlib",icon:"🛰️",xp:100,stars:1},
+    {id:2,name:"행렬 제련소",sub:"덧셈·뺄셈·행렬곱",icon:"⚒️",xp:120,stars:1},
+    {id:3,name:"픽셀 동굴",sub:"흑백 밝기 행렬",icon:"💡",xp:120,stars:1},
+    {id:4,name:"하트 조립실",sub:"0과 1의 이진 이미지",icon:"💗",xp:130,stars:1},
+    {id:5,name:"RGB 반응로",sub:"3채널 색상",icon:"🌈",xp:130,stars:1},
+    {id:6,name:"색상 합성 경기장",sub:"덧셈과 원소별 곱셈",icon:"⚗️",xp:140,stars:1},
+    {id:7,name:"광도 조절 연구소",sub:"스칼라 곱",icon:"☀️",xp:140,stars:1},
+    {id:8,name:"필터 행성",sub:"사진 업로드와 필터",icon:"🌀",xp:180,stars:2},
+    {id:9,name:"변환 게이트",sub:"회전·반전·전치",icon:"🔄",xp:160,stars:1},
+    {id:10,name:"최종 보스",sub:"종합 퀴즈",icon:"👾",xp:300,stars:3}
+  ];
+
+  const achievements = [
+    {id:"first",icon:"🚀",name:"첫 출항",desc:"첫 스테이지 완료"},
+    {id:"matrix",icon:"⚒️",name:"행렬 제련사",desc:"행렬 제련소 완료"},
+    {id:"pixel",icon:"💗",name:"픽셀 조각가",desc:"대칭 하트 미션 완료"},
+    {id:"blend",icon:"⚗️",name:"색상 연금술사",desc:"덧셈과 곱셈 모두 확인"},
+    {id:"filter",icon:"🌀",name:"필터 마법사",desc:"모자이크·블러·픽셀 확인"},
+    {id:"pipeline",icon:"🔗",name:"파이프라인 설계자",desc:"필터 조합 미션 완료"},
+    {id:"detective",icon:"🕵️",name:"필터 탐정",desc:"필터 추리 게임 통과"},
+    {id:"aerospace",icon:"🛰️",name:"우주 영상 분석가",desc:"항공우주 특별 작전 완료"},
+    {id:"boss",icon:"👑",name:"이미지 탐험대장",desc:"최종 보스 격파"},
+    {id:"perfect",icon:"💯",name:"완벽한 분석가",desc:"보스 퀴즈 만점"},
+    {id:"all",icon:"🌌",name:"은하계 정복자",desc:"모든 스테이지 완료"}
+  ];
+
+  const defaultHeart = [
+    [1,0,0,1,0,0,1],
+    [0,1,1,0,1,1,0],
+    [0,1,1,1,1,1,0],
+    [1,0,1,1,1,0,1],
+    [1,1,0,1,0,1,1],
+    [1,1,1,0,1,1,1]
+  ];
+
+  const defaultGray = [
+    [20,70,120,190],
+    [45,110,170,230],
+    [0,95,145,255],
+    [35,80,200,240]
+  ];
+
+  let state = {
+    name:"탐험가",
+    currentStage:1,
+    completed:[],
+    xp:0,
+    stars:0,
+    streak:0,
+    achievements:[],
+    bonusCompleted:[],
+    sound:true,
+    started:false
+  };
+
+  let heart = clone(defaultHeart);
+  let gray = clone(defaultGray);
+  let selectedGray = [0,0];
+  let blendMode = "add";
+  let blendSeen = {add:false,mul:false};
+  let scalarSeen = {dark:false,bright:false};
+  let transformSeen = new Set();
+  let transformSourceData = null;
+  let currentTransformData = null;
+  let filterSeen = {mosaic:false,blur:false,pixel:false};
+  let sourcePhotoData = null;
+  let pipelineApplied = false;
+  let pipelineOrder = [];
+  let currentPipelineData = null;
+  let guessGame = {active:false,round:0,score:0,current:null,locked:false};
+  let aeroSourceData = null;
+  let currentAeroData = null;
+  let aeroApplied = false;
+  let cameraStream = null;
+  let cameraTarget = "filter";
+  let cameraFacing = "environment";
+  let currentFilteredData = null;
+  let bossStarted = false;
+  let bossTime = 180;
+  let bossTimerId = null;
+  let lastCompletedStage = null;
+
+  function saveGame(){
+    localStorage.setItem("matrixQuestState",JSON.stringify(state));
+    localStorage.setItem("matrixQuestHeart",JSON.stringify(heart));
+    localStorage.setItem("matrixQuestGray",JSON.stringify(gray));
+  }
+
+  function loadGame(){
+    try{
+      const saved = JSON.parse(localStorage.getItem("matrixQuestState")||"null");
+      const savedHeart = JSON.parse(localStorage.getItem("matrixQuestHeart")||"null");
+      const savedGray = JSON.parse(localStorage.getItem("matrixQuestGray")||"null");
+      if(saved) state = {...state,...saved};
+      if(savedHeart) heart = savedHeart;
+      if(savedGray) gray = savedGray;
+    }catch(e){}
+  }
+
+  function rankName(level){
+    if(level>=8) return "은하계 이미지 사령관";
+    if(level>=6) return "우주 필터 전문가";
+    if(level>=4) return "RGB 탐험가";
+    if(level>=2) return "행렬 조종사";
+    return "픽셀 견습생";
+  }
+
+  function levelInfo(){
+    const level = Math.floor(state.xp/250)+1;
+    const inLevel = state.xp%250;
+    return {level,inLevel};
+  }
+
+  function updateHud(){
+    const {level,inLevel}=levelInfo();
+    $("#pilotName").textContent=state.name;
+    $("#pilotRank").textContent=`Lv.${level} ${rankName(level)}`;
+    $("#xpText").textContent=`XP ${inLevel} / 250`;
+    $("#totalXpText").textContent=`총 ${state.xp} XP`;
+    $("#xpBar").style.width=`${inLevel/250*100}%`;
+    $("#starCount").textContent=state.stars;
+    $("#badgeCount").textContent=state.achievements.length;
+    $("#stageCount").textContent=`${state.completed.length}/10`;
+    $("#streakText").textContent=state.streak;
+    const stage = stages[state.currentStage-1];
+    $("#currentMissionName").textContent=stage.name;
+  }
+
+  function buildStageMap(){
+    const map=$("#stageMap");
+    map.innerHTML="";
+    stages.forEach(stage=>{
+      const unlocked = stage.id===1 || state.completed.includes(stage.id-1) || state.completed.includes(stage.id);
+      const completed = state.completed.includes(stage.id);
+      const b=document.createElement("button");
+      b.className="stage-button"+(unlocked?"":" locked")+(completed?" completed":"")+(state.currentStage===stage.id?" active":"");
+      b.dataset.stage=stage.id;
+      b.innerHTML=`
+        <span class="stage-node">${completed?"✓":stage.icon}</span>
+        <span class="stage-label"><b>${stage.id}. ${stage.name}</b><small>${stage.sub}</small></span>
+        <span class="stage-status">${completed?"⭐":unlocked?"":"🔒"}</span>`;
+      b.onclick=()=>{
+        if(!unlocked){toast("이전 스테이지를 먼저 완료하세요.");playTone(150,.08);return;}
+        showStage(stage.id);
+      };
+      map.appendChild(b);
+    });
+  }
+
+  function showStage(id){
+    const unlocked = id===1 || state.completed.includes(id-1) || state.completed.includes(id);
+    if(!unlocked){toast("아직 잠긴 스테이지입니다.");return;}
+    state.currentStage=id;
+    $$(".stage-screen").forEach(s=>s.classList.toggle("active",+s.dataset.stage===id));
+    buildStageMap();
+    updateHud();
+    saveGame();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function toast(msg){
+    const t=$("#toast");
+    t.textContent=msg;
+    t.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer=setTimeout(()=>t.classList.remove("show"),1900);
+  }
+
+  function playTone(freq=620,duration=.12){
+    if(!state.sound) return;
+    try{
+      const AudioContext=window.AudioContext||window.webkitAudioContext;
+      const ctx=new AudioContext();
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type="sine";
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(.08,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start();osc.stop(ctx.currentTime+duration);
+    }catch(e){}
+  }
+
+  function confetti(){
+    const colors=["#58d8ff","#5b7cff","#9a6bff","#ff6cae","#4ee0a0","#ffd761"];
+    for(let i=0;i<55;i++){
+      const c=document.createElement("div");
+      c.className="confetti";
+      c.style.left=Math.random()*100+"vw";
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.setProperty("--drift",(Math.random()*220-110)+"px");
+      c.style.animationDelay=Math.random()*.35+"s";
+      c.style.transform=`rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),2300);
+    }
+  }
+
+  function unlockAchievement(id){
+    if(state.achievements.includes(id)) return;
+    state.achievements.push(id);
+    const a=achievements.find(x=>x.id===id);
+    toast(`🏅 배지 획득: ${a.name}`);
+    playTone(900,.18);
+    renderAchievements();
+  }
+
+  function renderAchievements(){
+    const html=achievements.map(a=>{
+      const on=state.achievements.includes(a.id);
+      return `<div class="achievement ${on?"unlocked":""}">
+        <div class="achievement-icon">${on?a.icon:"🔒"}</div>
+        <div><b>${a.name}</b><small>${a.desc}</small></div>
+      </div>`;
+    }).join("");
+    $("#achievementList").innerHTML=html;
+    $("#achievementModalList").innerHTML=html;
+    updateHud();
+  }
+
+  function completeStage(id){
+    if(state.completed.includes(id)){
+      toast("이미 완료한 미션입니다.");
+      return;
+    }
+    const s=stages[id-1];
+    state.completed.push(id);
+    state.completed.sort((a,b)=>a-b);
+    state.xp+=s.xp;
+    state.stars+=s.stars;
+    state.streak+=1;
+    lastCompletedStage=id;
+
+    if(id===1) unlockAchievement("first");
+    if(id===2) unlockAchievement("matrix");
+    if(id===4) unlockAchievement("pixel");
+    if(id===6) unlockAchievement("blend");
+    if(id===8) unlockAchievement("filter");
+    if(id===10) unlockAchievement("boss");
+    if(state.completed.length===10) unlockAchievement("all");
+
+    saveGame();
+    updateHud();
+    buildStageMap();
+    confetti();
+    playTone(820,.22);
+
+    $("#rewardIcon").textContent=id===10?"👑":"⭐";
+    $("#rewardTitle").textContent=id===10?"최종 보스 격파!":"미션 완료!";
+    $("#rewardStars").textContent="⭐".repeat(s.stars);
+    $("#rewardXp").textContent=`+${s.xp} XP`;
+    $("#rewardMessage").textContent=id<10?`${stages[id].name} 스테이지가 해금되었습니다.`:"모든 이미지 탐험 미션을 완료했습니다!";
+    $("#rewardContinueBtn").textContent=id<10?"다음 스테이지로":"업적 확인";
+    $("#rewardOverlay").classList.add("show");
+  }
+
+  function completeBonus(id,xp,stars,achievementId,title){
+    if(!Array.isArray(state.bonusCompleted)) state.bonusCompleted=[];
+    if(state.bonusCompleted.includes(id)){
+      toast("이미 완료한 보너스 미션입니다.");
+      return false;
+    }
+    state.bonusCompleted.push(id);
+    state.xp+=xp;
+    state.stars+=stars;
+    if(achievementId) unlockAchievement(achievementId);
+    saveGame();
+    updateHud();
+    confetti();
+    playTone(920,.2);
+    toast(`보너스 완료: ${title} · +${xp} XP`);
+    const card=$("#"+id+"BonusCard");
+    if(card) card.classList.add("bonus-complete");
+    return true;
+  }
+
+  function refreshBonusCards(){
+    if(!Array.isArray(state.bonusCompleted)) state.bonusCompleted=[];
+    ["pipeline","guess","aero"].forEach(id=>{
+      const card=$("#"+id+"BonusCard");
+      if(card) card.classList.toggle("bonus-complete",state.bonusCompleted.includes(id));
+    });
+  }
+
+  function missionResult(button,success,message){
+    const card=button.closest(".game-card");
+    const fb=card.querySelector(".mission-feedback");
+    fb.className="mission-feedback show "+(success?"good":"bad");
+    fb.textContent=message;
+    playTone(success?720:180,.12);
+    if(success) completeStage(+button.closest(".stage-screen").dataset.stage);
+  }
+
+  function format2D(matrix,name="matrix"){
+    return `${name} = np.array([\n${matrix.map(r=>"    ["+r.join(", ")+"]").join(",\n")}\n])`;
+  }
+
+  function format3D(matrix,name="image"){
+    return `${name} = np.array([\n${matrix.map(r=>"    ["+r.map(px=>"["+px.map(v=>Math.round(v)).join(", ")+"]").join(", ")+"]").join(",\n")}\n])`;
+  }
+
+  function drawMatrix(canvas,matrix,mode="binary",color="#111827"){
+    const ctx=canvas.getContext("2d");
+    const rows=matrix.length,cols=matrix[0].length;
+    const cw=canvas.width/cols,ch=canvas.height/rows;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    matrix.forEach((row,y)=>row.forEach((v,x)=>{
+      if(mode==="gray"){
+        const c=Math.round(clamp(v,0,255));
+        ctx.fillStyle=`rgb(${c},${c},${c})`;
+      }else if(mode==="binary"){
+        ctx.fillStyle=v===0?color:"#fff";
+      }else{
+        ctx.fillStyle=`rgb(${Math.round(clamp(v[0])*255)},${Math.round(clamp(v[1])*255)},${Math.round(clamp(v[2])*255)})`;
+      }
+      ctx.fillRect(x*cw,y*ch,cw+.4,ch+.4);
+    }));
+    ctx.strokeStyle="rgba(0,0,0,.18)";
+    for(let x=0;x<=cols;x++){ctx.beginPath();ctx.moveTo(x*cw,0);ctx.lineTo(x*cw,canvas.height);ctx.stroke()}
+    for(let y=0;y<=rows;y++){ctx.beginPath();ctx.moveTo(0,y*ch);ctx.lineTo(canvas.width,y*ch);ctx.stroke()}
+  }
+
+  // Stage 2
+  function read2x2(id){
+    const v=$$("#"+id+" input").map(i=>Number(i.value)||0);
+    return [[v[0],v[1]],[v[2],v[3]]];
+  }
+
+  function renderMatrixCalc(){
+    const A=read2x2("matrixA"),B=read2x2("matrixB"),op=$("#matrixOp").value;
+    let R,formula;
+    if(op==="add"){
+      R=A.map((r,i)=>r.map((v,j)=>v+B[i][j]));
+      formula="같은 위치의 원소끼리 더했습니다.";
+    }else if(op==="sub"){
+      R=A.map((r,i)=>r.map((v,j)=>v-B[i][j]));
+      formula="같은 위치의 원소끼리 뺐습니다.";
+    }else{
+      R=[
+        [A[0][0]*B[0][0]+A[0][1]*B[1][0],A[0][0]*B[0][1]+A[0][1]*B[1][1]],
+        [A[1][0]*B[0][0]+A[1][1]*B[1][0],A[1][0]*B[0][1]+A[1][1]*B[1][1]]
+      ];
+      formula=`왼쪽 위: ${A[0][0]}×${B[0][0]} + ${A[0][1]}×${B[1][0]} = ${R[0][0]}`;
+    }
+    $("#matrixResult").textContent=`[[${R[0][0]}, ${R[0][1]}],\n [${R[1][0]}, ${R[1][1]}]]`;
+    $("#matrixResult").dataset.value=JSON.stringify(R);
+    $("#matrixFormula").textContent=formula;
+  }
+
+  // Stage 3
+  function renderGray(){
+    const grid=$("#grayGrid");
+    grid.innerHTML="";
+    grid.style.gridTemplateColumns=`repeat(${gray[0].length},44px)`;
+    gray.forEach((row,y)=>row.forEach((v,x)=>{
+      const b=document.createElement("button");
+      b.className="value-cell";
+      b.textContent=v;
+      b.style.background=`rgb(${v},${v},${v})`;
+      b.style.color=v>140?"#07101f":"white";
+      if(selectedGray[0]===y&&selectedGray[1]===x)b.style.outline="3px solid #58d8ff";
+      b.onclick=()=>{
+        selectedGray=[y,x];
+        $("#grayValue").value=v;
+        $("#grayLabel").textContent=v;
+        renderGray();
+      };
+      grid.appendChild(b);
+    }));
+    drawMatrix($("#grayCanvas"),gray,"gray");
+  }
+
+  // Stage 4
+  function renderHeart(){
+    const editor=$("#heartEditor");
+    editor.innerHTML="";
+    editor.style.gridTemplateColumns=`repeat(${heart[0].length},42px)`;
+    editor.style.setProperty("--heart-color",$("#heartColor").value);
+    heart.forEach((row,y)=>row.forEach((v,x)=>{
+      const b=document.createElement("button");
+      b.className="heart-cell"+(v===0?" on":"");
+      b.title=`(${y},${x}) = ${v}`;
+      b.onclick=()=>{
+        heart[y][x]=heart[y][x]===0?1:0;
+        renderHeart();
+        renderBlend();
+        renderScalar();
+        saveGame();
+      };
+      editor.appendChild(b);
+    }));
+    drawMatrix($("#heartCanvas"),heart,"binary",$("#heartColor").value);
+    $("#heartMatrixText").textContent=format2D(heart,"heart");
+  }
+
+  function isSymmetric(m){
+    return m.every(row=>row.every((v,i)=>v===row[row.length-1-i]));
+  }
+
+  // Stage 5
+  function renderRgb(){
+    const r=+$("#rRange").value,g=+$("#gRange").value,b=+$("#bRange").value;
+    $("#rgbPreview").style.background=`rgb(${r*255},${g*255},${b*255})`;
+    $("#rgbValue").textContent=`[${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}]`;
+    $("#rText").textContent=r.toFixed(2);
+    $("#gText").textContent=g.toFixed(2);
+    $("#bText").textContent=b.toFixed(2);
+  }
+
+  // Stage 6
+  function rgbHeart(rgb){
+    return heart.map(row=>row.map(v=>v===0?[...rgb]:[1,1,1]));
+  }
+  function addImages(a,b){return a.map((r,i)=>r.map((px,j)=>px.map((v,k)=>clamp(v+b[i][j][k]))))}
+  function mulImages(a,b){return a.map((r,i)=>r.map((px,j)=>px.map((v,k)=>v*b[i][j][k])))}
+
+  function renderBlend(){
+    const red=rgbHeart([1,0,0]),blue=rgbHeart([0,0,1]);
+    const result=blendMode==="add"?addImages(red,blue):mulImages(red,blue);
+    drawMatrix($("#redCanvas"),red,"rgb");
+    drawMatrix($("#blueCanvas"),blue,"rgb");
+    drawMatrix($("#blendCanvas"),result,"rgb");
+    $("#blendOp").textContent=blendMode==="add"?"+":"×";
+    $("#blendTitle").textContent=blendMode==="add"?"add_heart":"mul_heart";
+    $("#blendNote").innerHTML=blendMode==="add"
+      ? "<b>덧셈 결과:</b> [1,0,0]+[0,0,1]=[1,0,1]이므로 자홍색 하트입니다."
+      : "<b>곱셈 결과:</b> [1,0,0]×[0,0,1]=[0,0,0]이므로 검정색 하트입니다.";
+    $("#blendMatrix").textContent=format3D(result,blendMode==="add"?"add_heart":"mul_heart");
+  }
+
+  // Stage 7
+  function renderScalar(){
+    const base=rgbHeart([.65,0,0]);
+    const k=+$("#scalarRange").value;
+    if(k<=.5) scalarSeen.dark=true;
+    if(k>=1.5) scalarSeen.bright=true;
+    const result=base.map(row=>row.map(px=>px.map(v=>clamp(v*k))));
+    drawMatrix($("#scalarBase"),base,"rgb");
+    drawMatrix($("#scalarCanvas"),result,"rgb");
+    $("#scalarValue").textContent=k.toFixed(2);
+    $("#scalarNote").textContent=k<1?"RGB 값이 감소하여 어두워졌습니다.":k>1?"RGB 값이 증가하여 밝아졌습니다.":"원본 밝기가 유지됩니다.";
+    $("#scalarFormula").textContent=`[0.65, 0, 0] × ${k.toFixed(2)} = [${clamp(.65*k).toFixed(3)}, 0, 0]`;
+  }
+
+  // Stage 8 filters
+  const filterInfo={
+    original:{title:"원본 이미지",theory:"원본 픽셀값을 변경하지 않습니다.",code:"# 원본\nresult = image.copy()"},
+    mosaic:{title:"모자이크 결과",theory:"블록 안의 픽셀들을 평균 RGB 값 하나로 바꿉니다.",code:"# 모자이크\nfor block in image:\n    average = block.mean(axis=(0,1))\n    block[:] = average"},
+    blur:{title:"평균 블러 결과",theory:"현재 픽셀을 주변 픽셀들의 평균값으로 바꿉니다.",code:"# 평균 블러\nneighborhood = image[y-r:y+r+1, x-r:x+r+1]\nresult[y,x] = neighborhood.mean(axis=(0,1))"},
+    grayscale:{title:"흑백 결과",theory:"R, G, B의 가중 평균으로 밝기를 계산합니다.",code:"gray = 0.299*R + 0.587*G + 0.114*B"},
+    invert:{title:"색 반전 결과",theory:"각 채널값을 255에서 빼 반대 밝기로 바꿉니다.",code:"result = 255 - image"},
+    brightness:{title:"밝기 결과",theory:"모든 RGB 값에 스칼라 k를 곱합니다.",code:"result = np.clip(image * k, 0, 255)"}
+  };
+
+  function copyImageData(src){return new ImageData(new Uint8ClampedArray(src.data),src.width,src.height)}
+
+  function setPhotoCanvasSize(w,h){
+    ["uploadedOriginalCanvas","filteredCanvas"].forEach(id=>{$("#"+id).width=w;$("#"+id).height=h});
+  }
+
+  function makeSamplePhoto(){
+    setPhotoCanvasSize(520,320);
+    const c=$("#uploadedOriginalCanvas"),ctx=c.getContext("2d");
+    const g=ctx.createLinearGradient(0,0,c.width,c.height);
+    g.addColorStop(0,"#61baff");g.addColorStop(.48,"#efd66b");g.addColorStop(1,"#ef5e82");
+    ctx.fillStyle=g;ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle="rgba(255,255,255,.93)";ctx.fillRect(35,35,185,105);
+    ctx.fillStyle="#17304f";ctx.font="bold 34px sans-serif";ctx.fillText("PIXEL",65,100);
+    ctx.fillStyle="#315f9f";ctx.beginPath();ctx.arc(378,105,70,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(350,90,10,0,Math.PI*2);ctx.arc(405,90,10,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff";ctx.lineWidth=8;ctx.beginPath();ctx.arc(378,115,35,.2,Math.PI-.2);ctx.stroke();
+    for(let i=0;i<8;i++){ctx.fillStyle=`hsl(${i*45},80%,55%)`;ctx.fillRect(50+i*55,230,44,55)}
+    sourcePhotoData=ctx.getImageData(0,0,c.width,c.height);
+    applyFilter();
+    syncFilterBonusSource();
+  }
+
+  function loadPhoto(file){
+    if(!file||!file.type.startsWith("image/")){toast("이미지 파일을 선택하세요.");return;}
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const scale=Math.min(1,560/img.width,380/img.height);
+      const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+      setPhotoCanvasSize(w,h);
+      const c=$("#uploadedOriginalCanvas"),ctx=c.getContext("2d");
+      ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+      sourcePhotoData=ctx.getImageData(0,0,w,h);
+      applyFilter();
+      syncFilterBonusSource();
+      URL.revokeObjectURL(url);
+      toast("사진을 불러왔습니다.");
+    };
+    img.onerror=()=>{toast("사진을 읽을 수 없습니다.");URL.revokeObjectURL(url)};
+    img.src=url;
+  }
+
+  function mosaic(src,size){
+    const out=new Uint8ClampedArray(src.data.length),w=src.width,h=src.height,d=src.data;
+    for(let by=0;by<h;by+=size)for(let bx=0;bx<w;bx+=size){
+      const xe=Math.min(w,bx+size),ye=Math.min(h,by+size);
+      let r=0,g=0,b=0,a=0,n=0;
+      for(let y=by;y<ye;y++)for(let x=bx;x<xe;x++){const i=(y*w+x)*4;r+=d[i];g+=d[i+1];b+=d[i+2];a+=d[i+3];n++}
+      r/=n;g/=n;b/=n;a/=n;
+      for(let y=by;y<ye;y++)for(let x=bx;x<xe;x++){const i=(y*w+x)*4;out[i]=r;out[i+1]=g;out[i+2]=b;out[i+3]=a}
+    }
+    return new ImageData(out,w,h);
+  }
+
+  function boxBlur(src,radius){
+    const w=src.width,h=src.height,d=src.data,stride=w+1,size=(w+1)*(h+1);
+    const ir=new Float64Array(size),ig=new Float64Array(size),ib=new Float64Array(size),ia=new Float64Array(size);
+    for(let y=1;y<=h;y++){
+      let rr=0,gg=0,bb=0,aa=0;
+      for(let x=1;x<=w;x++){
+        const di=((y-1)*w+x-1)*4;rr+=d[di];gg+=d[di+1];bb+=d[di+2];aa+=d[di+3];
+        const ii=y*stride+x,up=(y-1)*stride+x;
+        ir[ii]=ir[up]+rr;ig[ii]=ig[up]+gg;ib[ii]=ib[up]+bb;ia[ii]=ia[up]+aa;
+      }
+    }
+    const out=new Uint8ClampedArray(d.length);
+    const sum=(arr,l,t,r,b)=>arr[b*stride+r]-arr[t*stride+r]-arr[b*stride+l]+arr[t*stride+l];
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const l=Math.max(0,x-radius),r=Math.min(w,x+radius+1),t=Math.max(0,y-radius),b=Math.min(h,y+radius+1),n=(r-l)*(b-t),i=(y*w+x)*4;
+      out[i]=sum(ir,l,t,r,b)/n;out[i+1]=sum(ig,l,t,r,b)/n;out[i+2]=sum(ib,l,t,r,b)/n;out[i+3]=sum(ia,l,t,r,b)/n;
+    }
+    return new ImageData(out,w,h);
+  }
+
+  function pixelFilter(src,type,k=1){
+    const out=new Uint8ClampedArray(src.data.length);
+    for(let i=0;i<src.data.length;i+=4){
+      const r=src.data[i],g=src.data[i+1],b=src.data[i+2],a=src.data[i+3];
+      if(type==="grayscale"){const v=.299*r+.587*g+.114*b;out[i]=out[i+1]=out[i+2]=v}
+      else if(type==="invert"){out[i]=255-r;out[i+1]=255-g;out[i+2]=255-b}
+      else{out[i]=Math.min(255,r*k);out[i+1]=Math.min(255,g*k);out[i+2]=Math.min(255,b*k)}
+      out[i+3]=a;
+    }
+    return new ImageData(out,src.width,src.height);
+  }
+
+  function updateFilterControls(){
+    const type=$("#filterType").value;
+    $$(".filter-control[data-for]").forEach(box=>box.classList.toggle("disabled",box.dataset.for!==type));
+  }
+
+  function applyFilter(){
+    if(!sourcePhotoData)return;
+    const type=$("#filterType").value;
+    let result;
+    if(type==="mosaic"){result=mosaic(sourcePhotoData,+$("#mosaicSize").value);filterSeen.mosaic=true}
+    else if(type==="blur"){result=boxBlur(sourcePhotoData,+$("#blurRadius").value);filterSeen.blur=true}
+    else if(["grayscale","invert","brightness"].includes(type))result=pixelFilter(sourcePhotoData,type,+$("#filterBrightness").value);
+    else result=copyImageData(sourcePhotoData);
+    const c=$("#filteredCanvas");c.width=result.width;c.height=result.height;c.getContext("2d").putImageData(result,0,0);
+    currentFilteredData=result;
+    $("#filteredImageTitle").textContent=filterInfo[type].title;
+    $("#filterTheory").innerHTML="<b>원리:</b> "+filterInfo[type].theory;
+    $("#filterCode").textContent=filterInfo[type].code;
+    updateFilterControls();
+  }
+
+  function syncFilterBonusSource(){
+    if(!sourcePhotoData) return;
+    putImageDataOnCanvas($("#pipelineSourceCanvas"),sourcePhotoData);
+    putImageDataOnCanvas($("#guessSourceCanvas"),sourcePhotoData);
+    pipelineApplied=false;
+    pipelineOrder=[];
+    $("#pipelineCode").textContent="필터 순서를 선택하고 적용하세요.";
+    const pctx=$("#pipelineCanvas").getContext("2d");
+    $("#pipelineCanvas").width=sourcePhotoData.width;
+    $("#pipelineCanvas").height=sourcePhotoData.height;
+    pctx.clearRect(0,0,sourcePhotoData.width,sourcePhotoData.height);
+    guessGame={active:false,round:0,score:0,current:null,locked:false};
+    $("#guessRoundText").textContent="0 / 5";
+    $("#guessScoreText").textContent="0";
+    $("#guessFeedback").textContent="게임을 시작하면 문제가 표시됩니다.";
+    $$(".guess-option").forEach(b=>b.disabled=true);
+  }
+
+  function applyPipelineFilter(data,type){
+    if(type==="grayscale") return pixelFilter(data,"grayscale",1);
+    if(type==="blur") return boxBlur(data,3);
+    if(type==="brightness") return pixelFilter(data,"brightness",1.25);
+    if(type==="invert") return pixelFilter(data,"invert",1);
+    if(type==="mosaic") return mosaic(data,14);
+    return copyImageData(data);
+  }
+
+  function applyPipelineMission(){
+    if(!sourcePhotoData){toast("먼저 사진을 준비하세요.");return;}
+    const order=[$("#pipelineStep1").value,$("#pipelineStep2").value,$("#pipelineStep3").value];
+    let result=copyImageData(sourcePhotoData);
+    const code=["result = image.copy()"];
+    order.forEach(type=>{
+      if(type==="none") return;
+      result=applyPipelineFilter(result,type);
+      if(type==="grayscale") code.push("result = grayscale(result)");
+      if(type==="blur") code.push("result = box_blur(result, radius=3)");
+      if(type==="brightness") code.push("result = np.clip(result * 1.25, 0, 255)");
+      if(type==="invert") code.push("result = 255 - result");
+      if(type==="mosaic") code.push("result = mosaic(result, block_size=14)");
+    });
+    pipelineOrder=order;
+    pipelineApplied=true;
+    currentPipelineData=result;
+    putImageDataOnCanvas($("#pipelineCanvas"),result);
+    $("#pipelineCode").textContent=code.join("\n");
+    $("#pipelineFeedback").className="mission-feedback show good";
+    $("#pipelineFeedback").textContent="파이프라인을 실행했습니다. 순서를 확인한 뒤 보너스 판정을 누르세요.";
+  }
+
+  function randomGuessFilter(){
+    const types=["mosaic","blur","grayscale","invert","brightness"];
+    return types[Math.floor(Math.random()*types.length)];
+  }
+
+  function makeGuessResult(type){
+    if(type==="mosaic") return mosaic(sourcePhotoData,20);
+    if(type==="blur") return boxBlur(sourcePhotoData,7);
+    if(type==="grayscale") return pixelFilter(sourcePhotoData,"grayscale",1);
+    if(type==="invert") return pixelFilter(sourcePhotoData,"invert",1);
+    return pixelFilter(sourcePhotoData,"brightness",.55);
+  }
+
+  function nextGuessRound(){
+    if(guessGame.round>=5){
+      guessGame.active=false;
+      $$(".guess-option").forEach(b=>b.disabled=true);
+      const passed=guessGame.score>=3;
+      $("#guessFeedback").innerHTML=passed
+        ? `<b>추리 성공!</b> 5문제 중 ${guessGame.score}문제를 맞혔습니다.`
+        : `<b>재도전 필요:</b> ${guessGame.score}문제 정답입니다. 3문제 이상 맞혀야 합니다.`;
+      if(passed) completeBonus("guess",120,1,"detective","필터 추리 게임");
+      return;
+    }
+    guessGame.current=randomGuessFilter();
+    guessGame.locked=false;
+    guessGame.round++;
+    putImageDataOnCanvas($("#guessCanvas"),makeGuessResult(guessGame.current));
+    $("#guessRoundText").textContent=`${guessGame.round} / 5`;
+    $("#guessFeedback").textContent="결과를 관찰하고 적용된 필터를 선택하세요.";
+    $$(".guess-option").forEach(b=>b.disabled=false);
+  }
+
+  function startGuessGame(){
+    if(!sourcePhotoData){toast("먼저 사진을 준비하세요.");return;}
+    guessGame={active:true,round:0,score:0,current:null,locked:false};
+    $("#guessScoreText").textContent="0";
+    $("#startGuessBtn").textContent="게임 재시작";
+    nextGuessRound();
+  }
+
+  function submitGuess(type){
+    if(!guessGame.active||guessGame.locked) return;
+    guessGame.locked=true;
+    $$(".guess-option").forEach(b=>b.disabled=true);
+    const names={mosaic:"모자이크",blur:"블러",grayscale:"흑백",invert:"색 반전",brightness:"밝기 감소"};
+    const correct=type===guessGame.current;
+    if(correct) guessGame.score++;
+    $("#guessScoreText").textContent=guessGame.score;
+    $("#guessFeedback").innerHTML=correct
+      ? `<b>정답!</b> 이 결과는 ${names[guessGame.current]} 필터입니다.`
+      : `<b>오답.</b> 정답은 ${names[guessGame.current]} 필터입니다.`;
+    playTone(correct?760:190,.12);
+    setTimeout(nextGuessRound,1000);
+  }
+
+  function samplePixel(e){
+    if(!sourcePhotoData)return;
+    const c=$("#uploadedOriginalCanvas"),rect=c.getBoundingClientRect();
+    const x=Math.max(0,Math.min(c.width-1,Math.floor((e.clientX-rect.left)*c.width/rect.width)));
+    const y=Math.max(0,Math.min(c.height-1,Math.floor((e.clientY-rect.top)*c.height/rect.height)));
+    const i=(y*c.width+x)*4,r=sourcePhotoData.data[i],g=sourcePhotoData.data[i+1],b=sourcePhotoData.data[i+2];
+    $("#samplePixelSwatch").style.background=`rgb(${r},${g},${b})`;
+    $("#samplePixelText").textContent=`좌표 (${x}, ${y}) · RGB(${r}, ${g}, ${b})`;
+    filterSeen.pixel=true;
+  }
+
+  // Stage 9: uploaded-photo transformations
+  let transformMode="original";
+
+  const transformDescriptions = {
+    original:{
+      name:"원본",
+      info:"픽셀의 좌표와 RGB 값을 모두 유지합니다.",
+      code:`# 원본 복사
+result = image.copy()`
+    },
+    r90:{
+      name:"90° 시계 방향 회전",
+      info:"원본의 (x, y) 픽셀을 새로운 좌표 (높이-1-y, x)로 이동합니다. 가로와 세로 크기가 서로 바뀝니다.",
+      code:`# NumPy에서 90° 시계 방향 회전
+result = np.rot90(image, k=-1)`
+    },
+    r180:{
+      name:"180° 회전",
+      info:"픽셀의 위아래와 좌우 위치를 모두 뒤집습니다. 이미지 크기는 유지됩니다.",
+      code:`# 180° 회전
+result = np.rot90(image, k=2)`
+    },
+    lr:{
+      name:"좌우 반전",
+      info:"각 행의 픽셀 순서를 오른쪽부터 왼쪽 순서로 뒤집습니다.",
+      code:`# 좌우 반전
+result = np.fliplr(image)`
+    },
+    ud:{
+      name:"상하 반전",
+      info:"행의 순서를 아래쪽부터 위쪽 순서로 뒤집습니다.",
+      code:`# 상하 반전
+result = np.flipud(image)`
+    },
+    transpose:{
+      name:"전치",
+      info:"픽셀 배열의 행과 열을 교환합니다. 주대각선을 기준으로 대칭 이동한 것과 같습니다.",
+      code:`# 높이 축과 너비 축 교환
+result = np.transpose(image, (1, 0, 2))`
+    },
+    invert:{
+      name:"색 반전",
+      info:"픽셀 위치는 유지하고 RGB 값을 [255-R, 255-G, 255-B]로 바꿉니다.",
+      code:`# RGB 색 반전
+result = 255 - image`
+    }
+  };
+
+  function putImageDataOnCanvas(canvas,imageData){
+    canvas.width=imageData.width;
+    canvas.height=imageData.height;
+    canvas.getContext("2d").putImageData(imageData,0,0);
+  }
+
+  function copyTransformData(src){
+    return new ImageData(new Uint8ClampedArray(src.data),src.width,src.height);
+  }
+
+  function transformImageData(src,mode){
+    if(mode==="original") return copyTransformData(src);
+
+    const sw=src.width,sh=src.height,s=src.data;
+    let dw=sw,dh=sh;
+    if(["r90","transpose"].includes(mode)){dw=sh;dh=sw}
+    const out=new Uint8ClampedArray(dw*dh*4);
+
+    function copyPixel(sx,sy,dx,dy,invert=false){
+      const si=(sy*sw+sx)*4,di=(dy*dw+dx)*4;
+      out[di]=invert?255-s[si]:s[si];
+      out[di+1]=invert?255-s[si+1]:s[si+1];
+      out[di+2]=invert?255-s[si+2]:s[si+2];
+      out[di+3]=s[si+3];
+    }
+
+    for(let sy=0;sy<sh;sy++){
+      for(let sx=0;sx<sw;sx++){
+        if(mode==="r90") copyPixel(sx,sy,sh-1-sy,sx);
+        else if(mode==="r180") copyPixel(sx,sy,sw-1-sx,sh-1-sy);
+        else if(mode==="lr") copyPixel(sx,sy,sw-1-sx,sy);
+        else if(mode==="ud") copyPixel(sx,sy,sx,sh-1-sy);
+        else if(mode==="transpose") copyPixel(sx,sy,sy,sx);
+        else if(mode==="invert") copyPixel(sx,sy,sx,sy,true);
+      }
+    }
+    return new ImageData(out,dw,dh);
+  }
+
+  function setTransformSource(imageData,label="사진"){
+    transformSourceData=copyTransformData(imageData);
+    putImageDataOnCanvas($("#transformOriginalCanvas"),transformSourceData);
+    $("#transformSourceInfo").textContent=`${label} · ${imageData.width} × ${imageData.height}px · RGB 3채널 배열`;
+    transformMode="original";
+    renderTransform();
+  }
+
+  function makeTransformSample(){
+    const c=document.createElement("canvas");
+    c.width=520;c.height=330;
+    const ctx=c.getContext("2d");
+    const grad=ctx.createLinearGradient(0,0,c.width,c.height);
+    grad.addColorStop(0,"#52c9ff");
+    grad.addColorStop(.5,"#6b67e8");
+    grad.addColorStop(1,"#ff6cae");
+    ctx.fillStyle=grad;ctx.fillRect(0,0,c.width,c.height);
+
+    ctx.fillStyle="rgba(255,255,255,.92)";
+    ctx.fillRect(35,42,210,100);
+    ctx.fillStyle="#12233e";
+    ctx.font="bold 31px sans-serif";
+    ctx.fillText("ORIENTATION",48,102);
+
+    ctx.fillStyle="#ffd761";
+    ctx.beginPath();
+    ctx.moveTo(370,55);ctx.lineTo(470,165);ctx.lineTo(415,165);
+    ctx.lineTo(415,270);ctx.lineTo(325,270);ctx.lineTo(325,165);
+    ctx.lineTo(270,165);ctx.closePath();ctx.fill();
+
+    ctx.fillStyle="#07101f";
+    ctx.font="bold 20px sans-serif";
+    ctx.fillText("UP",366,143);
+    ctx.fillText("LEFT",55,250);
+    ctx.fillText("RIGHT",420,250);
+
+    const data=ctx.getImageData(0,0,c.width,c.height);
+    setTransformSource(data,"방향 구분용 예시 사진");
+  }
+
+  function loadTransformPhoto(file){
+    if(!file||!file.type.startsWith("image/")){
+      toast("이미지 파일을 선택하세요.");
+      return;
+    }
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const scale=Math.min(1,600/img.width,420/img.height);
+      const w=Math.max(1,Math.round(img.width*scale));
+      const h=Math.max(1,Math.round(img.height*scale));
+      const c=document.createElement("canvas");
+      c.width=w;c.height=h;
+      const ctx=c.getContext("2d");
+      ctx.drawImage(img,0,0,w,h);
+      setTransformSource(ctx.getImageData(0,0,w,h),file.name);
+      transformSeen.clear();
+      URL.revokeObjectURL(url);
+      toast("변환할 사진을 불러왔습니다.");
+    };
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      toast("사진을 읽을 수 없습니다.");
+    };
+    img.src=url;
+  }
+
+  function renderTransform(){
+    if(!transformSourceData) return;
+    const result=transformImageData(transformSourceData,transformMode);
+    currentTransformData=result;
+    putImageDataOnCanvas($("#transformCanvas"),result);
+    const d=transformDescriptions[transformMode];
+    $("#transformName").textContent=d.name;
+    $("#transformInfo").innerHTML=`<b>${d.name}</b><br>${d.info}<br>결과 크기: ${result.width} × ${result.height}px`;
+    $("#transformCode").textContent=d.code;
+  }
+
+  function setAeroSource(imageData,label="탐사 영상"){
+    aeroSourceData=copyTransformData(imageData);
+    putImageDataOnCanvas($("#aeroSourceCanvas"),aeroSourceData);
+    $("#aeroSourceInfo").textContent=`${label} · ${imageData.width} × ${imageData.height}px`;
+    aeroApplied=false;
+    currentAeroData=null;
+    $("#aeroResultInfo").textContent="설정을 선택하고 영상 복구를 실행하세요.";
+  }
+
+  function makeAeroSample(){
+    const c=document.createElement("canvas");
+    c.width=540;c.height=340;
+    const ctx=c.getContext("2d");
+    const bg=ctx.createLinearGradient(0,0,c.width,c.height);
+    bg.addColorStop(0,"#120f2d");
+    bg.addColorStop(.52,"#713c3d");
+    bg.addColorStop(1,"#d8894f");
+    ctx.fillStyle=bg;ctx.fillRect(0,0,c.width,c.height);
+
+    ctx.fillStyle="rgba(255,255,255,.72)";
+    for(let i=0;i<90;i++){
+      const x=Math.random()*c.width,y=Math.random()*150;
+      const r=Math.random()*1.8+.3;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    }
+
+    ctx.fillStyle="#a85738";
+    ctx.beginPath();
+    ctx.moveTo(0,250);ctx.lineTo(90,180);ctx.lineTo(180,245);ctx.lineTo(270,165);
+    ctx.lineTo(365,240);ctx.lineTo(445,190);ctx.lineTo(540,245);ctx.lineTo(540,340);ctx.lineTo(0,340);ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle="#d08b5e";
+    ctx.beginPath();ctx.ellipse(390,265,58,20,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#7e3d31";
+    ctx.beginPath();ctx.ellipse(390,265,38,11,0,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle="#ffd761";
+    ctx.font="bold 23px sans-serif";
+    ctx.fillText("MARS CAM 07",25,35);
+    ctx.fillStyle="#fff";
+    ctx.font="bold 18px sans-serif";
+    ctx.fillText("NORTH ↑",420,40);
+
+    const data=ctx.getImageData(0,0,c.width,c.height);
+    // 의도적으로 어둡게 만들어 보정 효과를 관찰할 수 있도록 함.
+    const dark=pixelFilter(data,"brightness",.58);
+    setAeroSource(dark,"화성 탐사 예시 영상");
+  }
+
+  function loadAeroPhoto(file){
+    if(!file||!file.type.startsWith("image/")){toast("이미지 파일을 선택하세요.");return;}
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const scale=Math.min(1,600/img.width,420/img.height);
+      const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+      const c=document.createElement("canvas");c.width=w;c.height=h;
+      const ctx=c.getContext("2d");ctx.drawImage(img,0,0,w,h);
+      setAeroSource(ctx.getImageData(0,0,w,h),file.name);
+      URL.revokeObjectURL(url);
+      toast("탐사 영상을 불러왔습니다.");
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);toast("사진을 읽을 수 없습니다.")};
+    img.src=url;
+  }
+
+  function applyAeroMission(){
+    if(!aeroSourceData){toast("먼저 탐사 영상을 준비하세요.");return;}
+    const rotation=$("#aeroRotation").value;
+    const blur=+$("#aeroBlur").value;
+    const brightness=+$("#aeroBrightness").value;
+    let result=transformImageData(aeroSourceData,rotation);
+    if(blur>0) result=boxBlur(result,blur);
+    result=pixelFilter(result,"brightness",brightness);
+    currentAeroData=result;
+    aeroApplied=true;
+    putImageDataOnCanvas($("#aeroCanvas"),result);
+    $("#aeroResultInfo").innerHTML=`방향: ${transformDescriptions[rotation].name}<br>블러: ${blur}px · 밝기: ${brightness.toFixed(2)}배 · 결과 ${result.width} × ${result.height}px`;
+    $("#aeroCode").textContent=`result = np.rot90(image, k=-1)
+result = box_blur(result, radius=${blur})
+result = np.clip(result * ${brightness.toFixed(2)}, 0, 255)`;
+  }
+
+  // Shared camera
+  async function startCamera(target){
+    cameraTarget=target;
+    const names={filter:"필터 행성",transform:"변환 게이트",aerospace:"항공우주 특별 작전"};
+    $("#cameraTargetText").textContent=`촬영 결과를 ${names[target]} 미션에 사용합니다.`;
+    stopCamera(false);
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      $("#cameraFallbackInput").click();
+      return;
+    }
+    try{
+      cameraStream=await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{ideal:cameraFacing},width:{ideal:1280},height:{ideal:720}},
+        audio:false
+      });
+      $("#cameraVideo").srcObject=cameraStream;
+      $("#cameraOverlay").classList.add("show");
+    }catch(err){
+      toast("실시간 카메라를 열 수 없어 기본 촬영 화면을 사용합니다.");
+      $("#cameraFallbackInput").click();
+    }
+  }
+
+  function stopCamera(hide=true){
+    if(cameraStream){
+      cameraStream.getTracks().forEach(t=>t.stop());
+      cameraStream=null;
+    }
+    $("#cameraVideo").srcObject=null;
+    if(hide) $("#cameraOverlay").classList.remove("show");
+  }
+
+  function useCapturedImageData(data,label="카메라 촬영 사진"){
+    if(cameraTarget==="filter"){
+      sourcePhotoData=copyImageData(data);
+      putImageDataOnCanvas($("#uploadedOriginalCanvas"),sourcePhotoData);
+      applyFilter();
+      syncFilterBonusSource();
+    }else if(cameraTarget==="transform"){
+      setTransformSource(data,label);
+      transformSeen.clear();
+    }else{
+      setAeroSource(data,label);
+    }
+    toast(`${label}을 미션에 적용했습니다.`);
+  }
+
+  function captureFromVideo(){
+    const video=$("#cameraVideo");
+    if(!video.videoWidth){toast("카메라 화면이 준비되지 않았습니다.");return;}
+    const scale=Math.min(1,700/video.videoWidth,500/video.videoHeight);
+    const w=Math.max(1,Math.round(video.videoWidth*scale)),h=Math.max(1,Math.round(video.videoHeight*scale));
+    const c=$("#cameraCaptureCanvas");c.width=w;c.height=h;
+    const ctx=c.getContext("2d");ctx.drawImage(video,0,0,w,h);
+    useCapturedImageData(ctx.getImageData(0,0,w,h),"카메라 촬영 사진");
+    stopCamera(true);
+  }
+
+  function loadCameraFallback(file){
+    if(!file)return;
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const scale=Math.min(1,700/img.width,500/img.height);
+      const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+      const c=document.createElement("canvas");c.width=w;c.height=h;
+      const ctx=c.getContext("2d");ctx.drawImage(img,0,0,w,h);
+      useCapturedImageData(ctx.getImageData(0,0,w,h),"카메라 촬영 사진");
+      URL.revokeObjectURL(url);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);toast("촬영한 사진을 읽을 수 없습니다.")};
+    img.src=url;
+  }
+
+  // Mission check functions
+  window.checkStage1=btn=>{
+    const ok=$("#libArray").value==="NumPy"&&$("#libDot").value==="NumPy"&&$("#libShow").value==="Matplotlib";
+    missionResult(btn,ok,ok?"장비 연결 성공!":"연결이 잘못되었습니다. 역할을 다시 확인하세요.");
+  };
+
+  window.checkStage2=btn=>{
+    const A=read2x2("matrixA"),B=read2x2("matrixB"),R=JSON.parse($("#matrixResult").dataset.value||"[]");
+    const ok=JSON.stringify(A)==="[[1,2],[3,4]]"&&JSON.stringify(B)==="[[5,6],[7,8]]"&&$("#matrixOp").value==="dot"&&JSON.stringify(R)==="[[19,22],[43,50]]";
+    missionResult(btn,ok,ok?"행렬 에너지 코어 완성!":"미션의 A, B 값과 행렬곱 결과를 확인하세요.");
+  };
+
+  window.checkStage3=btn=>{
+    const ok=gray[0][0]===0&&gray[gray.length-1][gray[0].length-1]===255;
+    missionResult(btn,ok,ok?"동굴 밝기 지도 복원 완료!":"왼쪽 위를 0, 오른쪽 아래를 255로 설정하세요.");
+  };
+
+  window.checkStage4=btn=>{
+    const zeros=heart.flat().filter(v=>v===0).length;
+    const ok=isSymmetric(heart)&&zeros>=10;
+    missionResult(btn,ok,ok?"대칭 통신 아이콘 완성!":"좌우 대칭과 하트 픽셀 수를 확인하세요.");
+  };
+
+  window.checkStage5=btn=>{
+    const r=+$("#rRange").value,g=+$("#gRange").value,b=+$("#bRange").value;
+    const ok=Math.abs(r-1)<.02&&Math.abs(g-1)<.02&&Math.abs(b)<.02;
+    missionResult(btn,ok,ok?"노란색 에너지 생성 성공!":"R=1, G=1, B=0으로 설정하세요.");
+  };
+
+  window.checkStage6=btn=>{
+    const ok=blendSeen.add&&blendSeen.mul;
+    missionResult(btn,ok,ok?"두 색상 연산을 모두 분석했습니다!":"덧셈과 곱셈 결과를 모두 확인하세요.");
+  };
+
+  window.checkStage7=btn=>{
+    const ok=scalarSeen.dark&&scalarSeen.bright;
+    missionResult(btn,ok,ok?"노출 보정 범위 확인 완료!":"k≤0.5와 k≥1.5를 모두 확인하세요.");
+  };
+
+  window.checkStage8=btn=>{
+    const ok=filterSeen.mosaic&&filterSeen.blur&&filterSeen.pixel;
+    missionResult(btn,ok,ok?"필터 행성 분석 완료!":"모자이크, 블러, 픽셀 확인을 모두 수행하세요.");
+  };
+
+  window.checkStage9=btn=>{
+    const ready=!!transformSourceData;
+    const transformed=["r90","lr","invert"].every(x=>transformSeen.has(x));
+    const ok=ready&&transformed;
+    missionResult(btn,ok,ok?"업로드 사진으로 모든 변환 게이트를 통과했습니다!":"사진을 준비한 뒤 90° 회전, 좌우 반전, 색 반전을 모두 확인하세요.");
+  };
+
+  // Boss
+  function startBoss(){
+    if(bossStarted)return;
+    bossStarted=true;
+    bossTime=180;
+    $("#startBossBtn").disabled=true;
+    $("#gradeBossBtn").disabled=false;
+    bossTimerId=setInterval(()=>{
+      bossTime--;
+      const m=String(Math.floor(bossTime/60)).padStart(2,"0"),s=String(bossTime%60).padStart(2,"0");
+      $("#bossTimer").textContent=`${m}:${s}`;
+      if(bossTime<=0){clearInterval(bossTimerId);gradeBoss()}
+    },1000);
+    toast("보스전이 시작되었습니다!");
+    playTone(420,.2);
+  }
+
+  function gradeBoss(){
+    if(!bossStarted){toast("먼저 보스전을 시작하세요.");return;}
+    clearInterval(bossTimerId);
+    let score=0;
+    $$("#bossQuiz .quiz-card").forEach(card=>{
+      const selected=card.querySelector("input:checked");
+      const ok=selected&&selected.value===card.dataset.answer;
+      if(ok)score++;
+      card.style.borderColor=ok?"#4ee0a0":"#ff647c";
+    });
+    $("#bossScoreText").textContent=`${score} / 8`;
+    const fb=$("#bossFeedback");
+    fb.className="mission-feedback show "+(score>=6?"good":"bad");
+    fb.textContent=score>=6?`보스 격파! ${score}문제를 맞혔습니다.`:`${score}문제 정답입니다. 6문제 이상이 필요합니다. 다시 도전하세요.`;
+    if(score===8)unlockAchievement("perfect");
+    if(score>=6)completeStage(10);
+    else{
+      bossStarted=false;
+      $("#startBossBtn").disabled=false;
+      $("#gradeBossBtn").disabled=true;
+      $("#bossTimer").textContent="03:00";
+      playTone(170,.2);
+    }
+  }
+
+  // UI events
+  $$(".mission-check").forEach(btn=>btn.onclick=()=>{
+    const fn=window[btn.dataset.check];
+    if(fn)fn(btn);
+  });
+
+  $$(".hint-btn").forEach(btn=>btn.onclick=()=>{
+    btn.closest(".game-card").querySelector(".hint-box").classList.toggle("open");
+  });
+
+  $$(".answer-btn").forEach(btn=>btn.onclick=()=>{
+    btn.closest(".game-card").querySelector(".answer-box").classList.toggle("open");
+  });
+
+  $$("#matrixA input,#matrixB input").forEach(i=>i.oninput=renderMatrixCalc);
+  $("#matrixOp").onchange=renderMatrixCalc;
+  $("#matrixReset").onclick=()=>{
+    [1,2,3,4].forEach((v,i)=>$$('#matrixA input')[i].value=v);
+    [5,6,7,8].forEach((v,i)=>$$('#matrixB input')[i].value=v);
+    $("#matrixOp").value="dot";renderMatrixCalc();
+  };
+
+  $("#grayValue").oninput=e=>{
+    const v=+e.target.value;
+    gray[selectedGray[0]][selectedGray[1]]=v;
+    $("#grayLabel").textContent=v;
+    renderGray();saveGame();
+  };
+  $("#grayReset").onclick=()=>{gray=clone(defaultGray);selectedGray=[0,0];$("#grayValue").value=20;$("#grayLabel").textContent=20;renderGray();saveGame()};
+
+  $("#heartColor").oninput=renderHeart;
+  $("#heartReset").onclick=()=>{heart=clone(defaultHeart);renderHeart();renderBlend();renderScalar();saveGame()};
+  $("#heartClear").onclick=()=>{heart=heart.map(r=>r.map(()=>1));renderHeart();renderBlend();renderScalar();saveGame()};
+
+  ["rRange","gRange","bRange"].forEach(id=>$("#"+id).oninput=renderRgb);
+
+  $("#showAdd").onclick=()=>{blendMode="add";blendSeen.add=true;renderBlend();playTone(620,.08)};
+  $("#showMul").onclick=()=>{blendMode="mul";blendSeen.mul=true;renderBlend();playTone(420,.08)};
+
+  $("#scalarRange").oninput=renderScalar;
+
+  $$(".camera-open-btn").forEach(btn=>btn.onclick=()=>startCamera(btn.dataset.cameraTarget));
+  $("#closeCameraBtn").onclick=()=>stopCamera(true);
+  $("#captureCameraBtn").onclick=captureFromVideo;
+  $("#switchCameraBtn").onclick=async()=>{
+    cameraFacing=cameraFacing==="environment"?"user":"environment";
+    await startCamera(cameraTarget);
+  };
+  $("#cameraOverlay").onclick=e=>{if(e.target===$("#cameraOverlay"))stopCamera(true)};
+  $("#cameraFallbackInput").onchange=e=>{
+    loadCameraFallback(e.target.files[0]);
+    e.target.value="";
+  };
+
+  $("#imageUpload").onchange=e=>loadPhoto(e.target.files[0]);
+  $("#sampleImageBtn").onclick=makeSamplePhoto;
+  $("#filterType").onchange=applyFilter;
+  $("#mosaicSize").oninput=e=>{$("#mosaicValue").textContent=e.target.value;if($("#filterType").value==="mosaic")applyFilter()};
+  $("#blurRadius").oninput=e=>{$("#blurValue").textContent=e.target.value;if($("#filterType").value==="blur")applyFilter()};
+  $("#filterBrightness").oninput=e=>{$("#filterBrightnessValue").textContent=(+e.target.value).toFixed(2);if($("#filterType").value==="brightness")applyFilter()};
+  $("#uploadedOriginalCanvas").onclick=samplePixel;
+
+  $("#applyPipelineBtn").onclick=applyPipelineMission;
+  $("#checkPipelineBtn").onclick=()=>{
+    const ok=pipelineApplied&&JSON.stringify(pipelineOrder)===JSON.stringify(["grayscale","blur","brightness"]);
+    const fb=$("#pipelineFeedback");
+    fb.className="mission-feedback show "+(ok?"good":"bad");
+    fb.textContent=ok?"필터 파이프라인 설계 성공!":"흑백 → 블러 → 밝기 순서인지 확인하세요.";
+    if(ok) completeBonus("pipeline",100,1,"pipeline","필터 조합 파이프라인");
+    else playTone(180,.1);
+  };
+  $("#pipelineHintBtn").onclick=()=>$("#pipelineHint").classList.toggle("open");
+  $("#startGuessBtn").onclick=startGuessGame;
+  $$(".guess-option").forEach(btn=>btn.onclick=()=>submitGuess(btn.dataset.guess));
+
+  $("#downloadFilteredBtn").onclick=()=>{
+    if(!currentFilteredData){toast("먼저 이미지를 준비하세요.");return}
+    const a=document.createElement("a");a.download="matrix_quest_filtered.png";a.href=$("#filteredCanvas").toDataURL("image/png");a.click();
+  };
+
+  $("#aeroImageUpload").onchange=e=>loadAeroPhoto(e.target.files[0]);
+  $("#aeroSampleBtn").onclick=makeAeroSample;
+  $("#aeroBlur").oninput=e=>$("#aeroBlurText").textContent=e.target.value;
+  $("#aeroBrightness").oninput=e=>$("#aeroBrightnessText").textContent=(+e.target.value).toFixed(2);
+  $("#applyAeroBtn").onclick=applyAeroMission;
+  $("#checkAeroBtn").onclick=()=>{
+    const rotation=$("#aeroRotation").value;
+    const blur=+$("#aeroBlur").value;
+    const brightness=+$("#aeroBrightness").value;
+    const ok=aeroApplied&&rotation==="r90"&&blur===2&&Math.abs(brightness-1.3)<.001;
+    const fb=$("#aeroFeedback");
+    fb.className="mission-feedback show "+(ok?"good":"bad");
+    fb.textContent=ok?"지상국 전송 규격 충족! 우주 카메라 영상 복구 성공.":"회전 r90, 블러 2px, 밝기 1.30을 적용하고 복구를 실행하세요.";
+    if(ok) completeBonus("aero",180,2,"aerospace","우주 카메라 영상 복구");
+    else playTone(180,.1);
+  };
+  $("#aeroHintBtn").onclick=()=>$("#aeroHint").classList.toggle("open");
+  $("#downloadAeroBtn").onclick=()=>{
+    if(!currentAeroData){toast("먼저 영상을 복구하세요.");return;}
+    const a=document.createElement("a");a.download="aerospace_restored.png";a.href=$("#aeroCanvas").toDataURL("image/png");a.click();
+  };
+
+  $("#transformImageUpload").onchange=e=>loadTransformPhoto(e.target.files[0]);
+  $("#transformSampleBtn").onclick=()=>{
+    makeTransformSample();
+    transformSeen.clear();
+    toast("변환용 예시 사진을 불러왔습니다.");
+  };
+  $("#downloadTransformBtn").onclick=()=>{
+    if(!currentTransformData){toast("먼저 사진을 준비하고 변환하세요.");return;}
+    const a=document.createElement("a");
+    a.download=`transform_${transformMode}.png`;
+    a.href=$("#transformCanvas").toDataURL("image/png");
+    a.click();
+  };
+
+  $$("#transformButtons button").forEach(btn=>btn.onclick=()=>{
+    if(!transformSourceData){toast("먼저 사진을 업로드하거나 예시 사진을 불러오세요.");return;}
+    transformMode=btn.dataset.t;
+    if(["r90","lr","invert"].includes(transformMode))transformSeen.add(transformMode);
+    renderTransform();
+    playTone(540,.07);
+  });
+
+  $("#startBossBtn").onclick=startBoss;
+  $("#gradeBossBtn").onclick=gradeBoss;
+
+  $("#prevStageBtn").onclick=()=>showStage(Math.max(1,state.currentStage-1));
+  $("#nextStageBtn").onclick=()=>{
+    const next=Math.min(10,state.currentStage+1);
+    const unlocked=next===1||state.completed.includes(next-1)||state.completed.includes(next);
+    if(unlocked)showStage(next);else toast("현재 미션을 먼저 완료하세요.");
+  };
+
+  $("#soundBtn").onclick=()=>{
+    state.sound=!state.sound;
+    $("#soundBtn").textContent=state.sound?"🔊 소리 ON":"🔇 소리 OFF";
+    saveGame();
+    if(state.sound)playTone();
+  };
+
+  $("#saveBtn").onclick=()=>{saveGame();toast("게임 진행을 저장했습니다.")};
+
+  $("#resetBtn").onclick=()=>{
+    if(confirm("모든 미션 진행도와 배지를 초기화할까요?")){
+      localStorage.removeItem("matrixQuestState");
+      localStorage.removeItem("matrixQuestHeart");
+      localStorage.removeItem("matrixQuestGray");
+      location.reload();
+    }
+  };
+
+  $("#achievementBtn").onclick=()=>$("#achievementOverlay").classList.add("show");
+  $("#closeAchievementBtn").onclick=()=>$("#achievementOverlay").classList.remove("show");
+  $("#achievementOverlay").onclick=e=>{if(e.target===$("#achievementOverlay"))$("#achievementOverlay").classList.remove("show")};
+
+  $("#rewardContinueBtn").onclick=()=>{
+    $("#rewardOverlay").classList.remove("show");
+    if(lastCompletedStage===10){
+      renderAchievements();
+      $("#achievementOverlay").classList.add("show");
+    }else if(lastCompletedStage<10){
+      showStage(lastCompletedStage+1);
+    }
+  };
+
+  $("#startGameBtn").onclick=()=>{
+    const name=$("#nameInput").value.trim()||"탐험가";
+    state.name=name;
+    state.started=true;
+    $("#welcomeOverlay").classList.remove("show");
+    updateHud();saveGame();playTone(760,.2);
+  };
+
+  // Initial
+  loadGame();
+  buildStageMap();
+  updateHud();
+  renderAchievements();
+  renderMatrixCalc();
+  renderGray();
+  renderHeart();
+  renderRgb();
+  renderBlend();
+  renderScalar();
+  makeSamplePhoto();
+  makeTransformSample();
+  makeAeroSample();
+  refreshBonusCards();
+  showStage(state.currentStage);
+
+  $("#soundBtn").textContent=state.sound?"🔊 소리 ON":"🔇 소리 OFF";
+  if(!state.started){
+    $("#nameInput").value=state.name;
+    $("#welcomeOverlay").classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
