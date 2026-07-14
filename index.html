@@ -890,7 +890,112 @@
       background:linear-gradient(135deg,#522a77,#273f79);
     }
 
-    .boss-score strong{font-size:26px}
+
+    .boss-random-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 10px;
+      border:1px solid rgba(88,216,255,.32);
+      border-radius:999px;
+      color:#bceeff;
+      background:rgba(32,103,137,.18);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .quiz-empty{
+      min-height:210px;
+      display:grid;
+      place-items:center;
+      align-content:center;
+      gap:4px;
+      padding:25px;
+      text-align:center;
+      color:#a9bdd5;
+      border:1px dashed #385776;
+      border-radius:14px;
+      background:#0a1729;
+    }
+
+    .quiz-empty-icon{
+      font-size:40px;
+      margin-bottom:4px;
+    }
+
+    .quiz-empty p{
+      margin:0;
+      color:#8299b5;
+      font-size:13px;
+    }
+
+    .quiz-category{
+      display:inline-flex;
+      align-items:center;
+      padding:4px 8px;
+      margin-bottom:8px;
+      border-radius:999px;
+      color:#06131f;
+      background:linear-gradient(135deg,var(--cyan),#a6eaff);
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:.04em;
+    }
+
+    .quiz-card.correct{
+      border-color:#4ee0a0;
+      box-shadow:0 0 0 1px rgba(78,224,160,.18);
+    }
+
+    .quiz-card.incorrect{
+      border-color:#ff647c;
+      box-shadow:0 0 0 1px rgba(255,100,124,.14);
+    }
+
+    .quiz-card label.correct-option{
+      color:#c7ffe4;
+      border-color:rgba(78,224,160,.55);
+      background:rgba(43,149,105,.20);
+    }
+
+    .quiz-card label.wrong-option{
+      color:#ffd3db;
+      border-color:rgba(255,100,124,.50);
+      background:rgba(173,48,75,.20);
+    }
+
+    .quiz-explanation{
+      display:none;
+      margin-top:11px;
+      padding:11px 12px;
+      color:#c8d9eb;
+      border:1px solid #31506f;
+      border-radius:10px;
+      background:#081525;
+      font-size:12px;
+    }
+
+    .quiz-explanation.show{display:block}
+
+    .quiz-explanation b{
+      color:var(--yellow);
+    }
+
+    .quiz-number-line{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:4px;
+    }
+
+    .quiz-difficulty{
+      color:#88a2bf;
+      font-size:10px;
+      white-space:nowrap;
+    }
+
+        .boss-score strong{font-size:26px}
     .timer{
       color:var(--yellow);
       font-family:Consolas,monospace;
@@ -1862,31 +1967,56 @@ plt.show()</div>
         <!-- Stage 10 -->
         <section class="stage-screen" data-stage="10">
           <div class="stage-hero">
-            <div><span class="chapter">STAGE 10 · FINAL BOSS</span><h1>최종 보스: 노이즈 코어</h1><p>지금까지 배운 행렬과 이미지 처리 지식으로 노이즈 코어를 정지시키세요. 8문제 중 6문제 이상이면 승리합니다.</p></div>
+            <div><span class="chapter">STAGE 10 · FINAL BOSS</span><h1>최종 보스: 노이즈 코어</h1><p>지금까지 배운 행렬과 이미지 처리 지식으로 노이즈 코어를 정지시키세요. 도전할 때마다 새로운 문제가 무작위로 생성됩니다.</p></div>
             <div class="reward-preview"><h3>🏆 최종 보상</h3><div class="reward-list"><div class="reward-line"><span>경험치</span><b>+300 XP</b></div><div class="reward-line"><span>별</span><b>⭐ 3개</b></div><div class="reward-line"><span>최종 칭호</span><b>이미지 탐험대장</b></div></div></div>
           </div>
 
           <div class="game-card">
             <div class="card-head">
-              <div class="card-title"><div class="card-icon">👾</div><div><h2>보스 퀴즈</h2><p>시작 버튼을 누르면 제한 시간 180초가 시작됩니다.</p></div></div>
+              <div class="card-title">
+                <div class="card-icon">👾</div>
+                <div>
+                  <h2>랜덤 생성 보스 퀴즈</h2>
+                  <p>보스전을 시작할 때마다 문제 유형, 숫자, 보기 순서가 새롭게 생성됩니다.</p>
+                </div>
+              </div>
               <div class="timer" id="bossTimer">03:00</div>
             </div>
-            <div class="mission-box"><b>FINAL MISSION</b><p>8문제 중 6문제 이상 정답을 맞히세요.</p></div>
-            <div class="controls"><button class="btn btn-gold" id="startBossBtn">보스전 시작</button></div>
-            <div class="quiz-grid" id="bossQuiz">
-              <div class="quiz-card" data-answer="b"><p>1. 흑백 이미지에서 값 0은?</p><label><input type="radio" name="q1" value="a"> 흰색</label><label><input type="radio" name="q1" value="b"> 검정색</label><label><input type="radio" name="q1" value="c"> 파란색</label></div>
-              <div class="quiz-card" data-answer="c"><p>2. RGB 배열의 마지막 차원 크기가 3인 이유는?</p><label><input type="radio" name="q2" value="a"> 이미지가 세 장이라서</label><label><input type="radio" name="q2" value="b"> 좌표축이 세 개라서</label><label><input type="radio" name="q2" value="c"> R, G, B 채널을 저장해서</label></div>
-              <div class="quiz-card" data-answer="a"><p>3. [1,0,0]+[0,0,1]은?</p><label><input type="radio" name="q3" value="a"> [1,0,1]</label><label><input type="radio" name="q3" value="b"> [0,0,0]</label><label><input type="radio" name="q3" value="c"> [1,1,1]</label></div>
-              <div class="quiz-card" data-answer="b"><p>4. [1,0,0]×[0,0,1]의 원소별 곱은?</p><label><input type="radio" name="q4" value="a"> [1,0,1]</label><label><input type="radio" name="q4" value="b"> [0,0,0]</label><label><input type="radio" name="q4" value="c"> [1,1,0]</label></div>
-              <div class="quiz-card" data-answer="c"><p>5. 이미지에 k=0.5를 곱하면?</p><label><input type="radio" name="q5" value="a"> 회전한다</label><label><input type="radio" name="q5" value="b"> 밝아진다</label><label><input type="radio" name="q5" value="c"> 어두워진다</label></div>
-              <div class="quiz-card" data-answer="a"><p>6. 모자이크 블록 크기를 크게 하면?</p><label><input type="radio" name="q6" value="a"> 세부 정보가 더 많이 사라진다</label><label><input type="radio" name="q6" value="b"> 해상도가 증가한다</label><label><input type="radio" name="q6" value="c"> 자동으로 밝아진다</label></div>
-              <div class="quiz-card" data-answer="b"><p>7. 평균 블러는 현재 픽셀을 무엇으로 바꾸는가?</p><label><input type="radio" name="q7" value="a"> 무조건 0</label><label><input type="radio" name="q7" value="b"> 주변 픽셀의 평균</label><label><input type="radio" name="q7" value="c"> 반대쪽 픽셀</label></div>
-              <div class="quiz-card" data-answer="c"><p>8. 전치 연산의 의미는?</p><label><input type="radio" name="q8" value="a"> 모든 값을 1로 바꿈</label><label><input type="radio" name="q8" value="b"> 색을 반전함</label><label><input type="radio" name="q8" value="c"> 행과 열을 서로 바꿈</label></div>
+
+            <div class="mission-box">
+              <b>FINAL MISSION</b>
+              <p>무작위로 생성되는 8문제 중 6문제 이상 정답을 맞히세요. 재도전할 때는 이전과 다른 문제가 출제됩니다.</p>
             </div>
+
+            <div class="controls">
+              <label>
+                난이도
+                <select id="bossDifficulty">
+                  <option value="balanced">균형 모드</option>
+                  <option value="basic">기본 개념 모드</option>
+                  <option value="challenge">계산 도전 모드</option>
+                </select>
+              </label>
+              <button class="btn btn-gold" id="startBossBtn">랜덤 보스전 시작</button>
+              <span class="boss-random-badge" id="bossQuestionInfo">문제 미생성</span>
+            </div>
+
+            <div class="quiz-grid" id="bossQuiz">
+              <div class="quiz-empty">
+                <div class="quiz-empty-icon">🎲</div>
+                <b>아직 문제가 생성되지 않았습니다.</b>
+                <p>난이도를 선택한 뒤 ‘랜덤 보스전 시작’을 누르세요.</p>
+              </div>
+            </div>
+
             <div class="boss-score">
-              <div><small>보스전 점수</small><br><strong id="bossScoreText">0 / 8</strong></div>
+              <div>
+                <small>보스전 점수</small><br>
+                <strong id="bossScoreText">0 / 8</strong>
+              </div>
               <button class="btn btn-gold" id="gradeBossBtn" disabled>공격하기</button>
             </div>
+
             <div class="mission-actions">
               <div class="mission-feedback" id="bossFeedback"></div>
             </div>
@@ -2054,6 +2184,10 @@ plt.show()</div>
   let bossStarted = false;
   let bossTime = 180;
   let bossTimerId = null;
+  let bossCurrentQuestions = [];
+  let bossAttempt = 0;
+  const BOSS_TOTAL = 8;
+  const BOSS_PASS = 6;
   let lastCompletedStage = null;
 
   function saveGame(){
@@ -3025,43 +3159,468 @@ result = np.clip(result * ${brightness.toFixed(2)}, 0, 255)`;
   };
 
   // Boss
-  function startBoss(){
-    if(bossStarted)return;
-    bossStarted=true;
+  function randomInt(min,max){
+    return Math.floor(Math.random()*(max-min+1))+min;
+  }
+
+  function shuffleArray(array){
+    const result=[...array];
+    for(let i=result.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [result[i],result[j]]=[result[j],result[i]];
+    }
+    return result;
+  }
+
+  function uniqueChoices(correct,candidates,count=4){
+    const values=[String(correct)];
+    candidates.map(String).forEach(value=>{
+      if(!values.includes(value)) values.push(value);
+    });
+    while(values.length<count){
+      const fallback=String(randomInt(0,255));
+      if(!values.includes(fallback)) values.push(fallback);
+    }
+    return shuffleArray(values.slice(0,count));
+  }
+
+  function makeBossQuestion(category,question,correct,distractors,explanation,difficulty="기본"){
+    const options=uniqueChoices(correct,distractors,4);
+    return {
+      category,
+      question,
+      options,
+      answer:String(options.indexOf(String(correct))),
+      correctText:String(correct),
+      explanation,
+      difficulty
+    };
+  }
+
+  const bossQuestionFactories = [
+    {
+      category:"라이브러리",
+      level:"basic",
+      create(){
+        const items=[
+          ["행렬과 다차원 배열을 생성하고 계산하는 라이브러리는?","NumPy",["Matplotlib","localStorage","Canvas"],"NumPy는 배열 생성과 행렬 계산을 담당합니다."],
+          ["배열을 이미지나 그래프로 화면에 나타낼 때 주로 사용하는 라이브러리는?","Matplotlib",["NumPy","localStorage","JSON"],"Matplotlib의 imshow()는 배열을 이미지로 표시합니다."],
+          ["게임 진행 상태를 브라우저에 저장하는 기능은?","localStorage",["Matplotlib","np.dot()","Canvas 회전"],"localStorage는 브라우저에 문자열 형태로 데이터를 저장합니다."]
+        ];
+        const [q,a,d,e]=items[randomInt(0,items.length-1)];
+        return makeBossQuestion("라이브러리",q,a,d,e,"기본");
+      }
+    },
+    {
+      category:"행렬 덧셈",
+      level:"calculation",
+      create(mode){
+        const max=mode==="challenge"?9:6;
+        const a=randomInt(1,max),b=randomInt(1,max);
+        const row=randomInt(1,2),col=randomInt(1,2);
+        const correct=a+b;
+        return makeBossQuestion(
+          "행렬 연산",
+          `두 행렬의 ${row}행 ${col}열 값이 각각 ${a}, ${b}이다. 두 행렬을 더한 결과의 같은 위치 값은?`,
+          correct,
+          [correct+1,correct-1,a*b,a-b],
+          `행렬 덧셈은 같은 위치의 원소끼리 계산하므로 ${a}+${b}=${correct}입니다.`,
+          "계산"
+        );
+      }
+    },
+    {
+      category:"행렬곱",
+      level:"calculation",
+      create(mode){
+        const max=mode==="challenge"?6:4;
+        const a=randomInt(1,max),b=randomInt(1,max),c=randomInt(1,max),d=randomInt(1,max);
+        const correct=a*c+b*d;
+        return makeBossQuestion(
+          "행렬 연산",
+          `행 벡터 [${a}, ${b}]와 열 벡터 [${c}, ${d}]의 곱을 더한 값은?`,
+          correct,
+          [a+b+c+d,a*c+b,c+d,correct+randomInt(1,4)],
+          `${a}×${c}+${b}×${d}=${a*c}+${b*d}=${correct}입니다.`,
+          mode==="challenge"?"도전 계산":"계산"
+        );
+      }
+    },
+    {
+      category:"흑백 픽셀",
+      level:"basic",
+      create(){
+        const a=randomInt(0,180);
+        const b=randomInt(a+1,255);
+        return makeBossQuestion(
+          "흑백 이미지",
+          `흑백 이미지에서 픽셀값 ${a}와 ${b} 중 더 밝게 표시되는 값은?`,
+          b,
+          [a,Math.round((a+b)/2),255-b],
+          `흑백 이미지에서는 값이 클수록 밝습니다. 따라서 ${b}가 더 밝습니다.`,
+          "기본"
+        );
+      }
+    },
+    {
+      category:"이진 이미지",
+      level:"basic",
+      create(){
+        const questions=[
+          ["이진 이미지를 표현하는 데 필요한 서로 다른 값의 개수는?","2",["1","3","256"],"이진 이미지는 일반적으로 0과 1, 두 값으로 표현합니다."],
+          ["현재 하트 실습에서 하트 색 픽셀로 사용한 값은?","0",["1","128","255"],"웹앱의 하트 행렬에서는 0을 하트 색으로 표시했습니다."],
+          ["6행 7열 이진 이미지의 전체 픽셀 수는?","42",["13","36","67"],"픽셀 수는 행×열이므로 6×7=42입니다."]
+        ];
+        const [q,a,d,e]=questions[randomInt(0,questions.length-1)];
+        return makeBossQuestion("이진 이미지",q,a,d,e,"기본");
+      }
+    },
+    {
+      category:"RGB 덧셈",
+      level:"calculation",
+      create(){
+        const colors=[
+          {name:"빨강",v:[1,0,0]},
+          {name:"초록",v:[0,1,0]},
+          {name:"파랑",v:[0,0,1]}
+        ];
+        const pair=shuffleArray(colors).slice(0,2);
+        const result=pair[0].v.map((x,i)=>Math.min(1,x+pair[1].v[i]));
+        const correct=`[${result.join(",")}]`;
+        const all=["[1,1,0]","[1,0,1]","[0,1,1]","[0,0,0]","[1,1,1]"];
+        return makeBossQuestion(
+          "RGB",
+          `${pair[0].name} ${JSON.stringify(pair[0].v)}과 ${pair[1].name} ${JSON.stringify(pair[1].v)}을 더하고 0~1 범위로 제한한 결과는?`,
+          correct,
+          all.filter(x=>x!==correct),
+          `채널별로 더하면 ${correct}가 됩니다.`,
+          "계산"
+        );
+      }
+    },
+    {
+      category:"RGB 원소별 곱",
+      level:"calculation",
+      create(){
+        const vectors=[
+          [1,0,0],[0,1,0],[0,0,1],[1,1,0],[1,0,1],[0,1,1],[1,1,1]
+        ];
+        const a=vectors[randomInt(0,vectors.length-1)];
+        const b=vectors[randomInt(0,vectors.length-1)];
+        const r=a.map((x,i)=>x*b[i]);
+        const correct=`[${r.join(",")}]`;
+        const candidates=shuffleArray(vectors.map(v=>`[${v.join(",")}]`)).filter(x=>x!==correct);
+        return makeBossQuestion(
+          "RGB",
+          `${JSON.stringify(a)} × ${JSON.stringify(b)}의 원소별 곱셈 결과는?`,
+          correct,
+          candidates,
+          `같은 위치의 채널끼리 곱하므로 결과는 ${correct}입니다.`,
+          "계산"
+        );
+      }
+    },
+    {
+      category:"스칼라 곱",
+      level:"calculation",
+      create(mode){
+        const base=[0.2,0.4,0.6,0.8][randomInt(0,3)];
+        const k=mode==="challenge"
+          ? [0.5,0.75,1.25,1.5][randomInt(0,3)]
+          : [0.5,1.5][randomInt(0,1)];
+        const correct=Math.min(1,base*k);
+        const format=x=>Number(x).toFixed(2);
+        return makeBossQuestion(
+          "밝기 조절",
+          `픽셀 채널값 ${format(base)}에 k=${format(k)}를 곱하고 0~1 범위로 제한하면?`,
+          format(correct),
+          [format(base),format(k),format(Math.min(1,correct+0.2)),format(Math.max(0,correct-0.2))],
+          `${format(base)}×${format(k)}=${format(base*k)}이며, 1을 넘으면 1로 제한합니다.`,
+          mode==="challenge"?"도전 계산":"계산"
+        );
+      }
+    },
+    {
+      category:"모자이크",
+      level:"basic",
+      create(){
+        const small=randomInt(4,10);
+        const large=randomInt(20,40);
+        return makeBossQuestion(
+          "이미지 필터",
+          `같은 사진에 모자이크 블록 크기 ${small}px와 ${large}px를 적용했다. 세부 정보가 더 많이 사라지는 설정은?`,
+          `${large}px`,
+          [`${small}px`,"두 결과가 항상 같다","블록 크기와 관계없다"],
+          `블록이 클수록 더 넓은 영역을 평균색 하나로 바꾸므로 ${large}px에서 세부 정보가 더 많이 사라집니다.`,
+          "기본"
+        );
+      }
+    },
+    {
+      category:"블러",
+      level:"basic",
+      create(){
+        const radius=randomInt(2,9);
+        return makeBossQuestion(
+          "이미지 필터",
+          `평균 블러 반경을 ${radius}px로 설정하면 각 픽셀은 주로 무엇을 이용해 새 값이 결정되는가?`,
+          "주변 픽셀값의 평균",
+          ["원본 픽셀의 반대색","무조건 0","이미지 파일 이름"],
+          `평균 블러는 현재 픽셀 주변 영역의 평균 RGB 값을 계산합니다.`,
+          "기본"
+        );
+      }
+    },
+    {
+      category:"색 반전",
+      level:"calculation",
+      create(mode){
+        const step=mode==="challenge"?1:5;
+        const r=randomInt(0,51)*step;
+        const g=randomInt(0,51)*step;
+        const b=randomInt(0,51)*step;
+        const result=[255-r,255-g,255-b];
+        const correct=`[${result.join(", ")}]`;
+        return makeBossQuestion(
+          "이미지 필터",
+          `RGB 픽셀 [${r}, ${g}, ${b}]을 색 반전하면?`,
+          correct,
+          [
+            `[${r}, ${g}, ${b}]`,
+            `[${255-r}, ${g}, ${b}]`,
+            `[${r}, ${255-g}, ${255-b}]`,
+            `[${255-b}, ${255-g}, ${255-r}]`
+          ],
+          `색 반전은 각 채널을 255에서 빼므로 ${correct}입니다.`,
+          mode==="challenge"?"도전 계산":"계산"
+        );
+      }
+    },
+    {
+      category:"회전 크기",
+      level:"calculation",
+      create(){
+        const w=randomInt(3,12)*50;
+        const h=randomInt(3,8)*50;
+        return makeBossQuestion(
+          "이미지 변환",
+          `가로 ${w}px, 세로 ${h}px 사진을 90° 회전했을 때 결과 크기는?`,
+          `가로 ${h}px, 세로 ${w}px`,
+          [
+            `가로 ${w}px, 세로 ${h}px`,
+            `가로 ${w+h}px, 세로 ${w+h}px`,
+            `가로 ${Math.abs(w-h)}px, 세로 ${Math.abs(w-h)}px`
+          ],
+          `90° 회전하면 가로와 세로가 서로 바뀝니다.`,
+          "계산"
+        );
+      }
+    },
+    {
+      category:"전치",
+      level:"basic",
+      create(){
+        const h=randomInt(3,9),w=randomInt(4,12);
+        return makeBossQuestion(
+          "이미지 변환",
+          `컬러 이미지 배열의 shape이 (${h}, ${w}, 3)일 때 높이와 너비 축을 전치하면?`,
+          `(${w}, ${h}, 3)`,
+          [`(${h}, ${w}, 3)`,`(3, ${h}, ${w})`,`(${w}, 3, ${h})`],
+          `전치는 높이와 너비 축을 교환하지만 RGB 채널 수 3은 유지합니다.`,
+          "기본"
+        );
+      }
+    },
+    {
+      category:"필터 파이프라인",
+      level:"challenge",
+      create(){
+        const items=[
+          [
+            "흑백 변환 후 밝기 조절을 적용할 때 두 번째 필터의 입력은?",
+            "흑백 변환이 끝난 이미지",
+            ["처음 원본 이미지","빈 배열","카메라 권한 정보"],
+            "파이프라인에서는 앞 단계의 출력이 다음 단계의 입력이 됩니다."
+          ],
+          [
+            "블러와 경계 검출의 적용 순서를 바꾸면 결과가 달라질 수 있는 가장 적절한 이유는?",
+            "각 필터가 이전 단계의 결과를 입력으로 사용하기 때문",
+            ["HTML 파일 이름이 바뀌기 때문","픽셀 수가 항상 0이 되기 때문","카메라가 자동으로 꺼지기 때문"],
+            "필터 연산은 일반적으로 순서에 따라 결과가 달라질 수 있습니다."
+          ]
+        ];
+        const [q,a,d,e]=items[randomInt(0,items.length-1)];
+        return makeBossQuestion("필터 파이프라인",q,a,d,e,"도전 개념");
+      }
+    },
+    {
+      category:"카메라와 웹",
+      level:"basic",
+      create(){
+        const items=[
+          ["웹브라우저의 실시간 카메라 기능이 안정적으로 작동하기 위해 필요한 환경은?","HTTPS 보안 연결",["TXT 파일","오프라인 계산기","압축 파일"],"브라우저 카메라 권한은 일반적으로 HTTPS 같은 보안 환경에서 제공됩니다."],
+          ["촬영한 사진을 서버로 보내지 않고 브라우저 안에서 처리할 때 사용하는 주요 화면 요소는?","Canvas",["이메일 첨부","프린터 드라이버","PDF 암호"],"Canvas는 브라우저에서 픽셀을 읽고 변환 결과를 그릴 수 있습니다."]
+        ];
+        const [q,a,d,e]=items[randomInt(0,items.length-1)];
+        return makeBossQuestion("웹 기술",q,a,d,e,"기본");
+      }
+    },
+    {
+      category:"형상과 픽셀 수",
+      level:"calculation",
+      create(mode){
+        const h=randomInt(3,mode==="challenge"?12:8);
+        const w=randomInt(3,mode==="challenge"?12:8);
+        const correct=h*w;
+        return makeBossQuestion(
+          "이미지 배열",
+          `${h}행 ${w}열 흑백 이미지에 들어 있는 전체 픽셀 수는?`,
+          correct,
+          [h+w,correct+1,Math.abs(h-w),h*w*3],
+          `흑백 이미지의 픽셀 수는 행×열이므로 ${h}×${w}=${correct}입니다.`,
+          "계산"
+        );
+      }
+    }
+  ];
+
+  function generateBossQuestions(mode="balanced"){
+    let pool;
+    if(mode==="basic"){
+      pool=bossQuestionFactories.filter(factory=>factory.level!=="challenge");
+    }else if(mode==="challenge"){
+      const calculation=bossQuestionFactories.filter(factory=>factory.level==="calculation"||factory.level==="challenge");
+      const support=shuffleArray(bossQuestionFactories.filter(factory=>factory.level==="basic")).slice(0,2);
+      pool=[...calculation,...support];
+    }else{
+      pool=[...bossQuestionFactories];
+    }
+
+    const selected=shuffleArray(pool).slice(0,BOSS_TOTAL);
+    bossCurrentQuestions=selected.map(factory=>factory.create(mode));
+    bossAttempt++;
+    renderBossQuestions();
+  }
+
+  function renderBossQuestions(){
+    const quiz=$("#bossQuiz");
+    quiz.innerHTML=bossCurrentQuestions.map((item,index)=>`
+      <div class="quiz-card" data-answer="${item.answer}" data-question-index="${index}">
+        <div class="quiz-number-line">
+          <span class="quiz-category">${item.category}</span>
+          <span class="quiz-difficulty">${item.difficulty}</span>
+        </div>
+        <p>${index+1}. ${item.question}</p>
+        ${item.options.map((option,optionIndex)=>`
+          <label>
+            <input type="radio" name="boss_q${index}" value="${optionIndex}">
+            ${option}
+          </label>
+        `).join("")}
+        <div class="quiz-explanation">
+          <b>정답: ${item.correctText}</b><br>
+          ${item.explanation}
+        </div>
+      </div>
+    `).join("");
+
+    $("#bossScoreText").textContent=`0 / ${BOSS_TOTAL}`;
+    $("#bossQuestionInfo").textContent=`🎲 랜덤 세트 #${bossAttempt} · ${BOSS_TOTAL}문제`;
+    const fb=$("#bossFeedback");
+    fb.className="mission-feedback";
+    fb.textContent="";
+  }
+
+  function resetBossTimer(){
+    clearInterval(bossTimerId);
     bossTime=180;
+    $("#bossTimer").textContent="03:00";
+  }
+
+  function startBoss(){
+    if(bossStarted) return;
+
+    resetBossTimer();
+    const mode=$("#bossDifficulty").value;
+    generateBossQuestions(mode);
+
+    bossStarted=true;
+    $("#bossDifficulty").disabled=true;
     $("#startBossBtn").disabled=true;
+    $("#startBossBtn").textContent="보스전 진행 중";
     $("#gradeBossBtn").disabled=false;
+
     bossTimerId=setInterval(()=>{
       bossTime--;
-      const m=String(Math.floor(bossTime/60)).padStart(2,"0"),s=String(bossTime%60).padStart(2,"0");
+      const m=String(Math.floor(bossTime/60)).padStart(2,"0");
+      const s=String(bossTime%60).padStart(2,"0");
       $("#bossTimer").textContent=`${m}:${s}`;
-      if(bossTime<=0){clearInterval(bossTimerId);gradeBoss()}
+      if(bossTime<=0){
+        clearInterval(bossTimerId);
+        gradeBoss(true);
+      }
     },1000);
-    toast("보스전이 시작되었습니다!");
+
+    toast("새로운 랜덤 문제 8개가 생성되었습니다!");
     playTone(420,.2);
   }
 
-  function gradeBoss(){
-    if(!bossStarted){toast("먼저 보스전을 시작하세요.");return;}
+  function gradeBoss(timeOver=false){
+    if(!bossStarted){
+      toast("먼저 랜덤 보스전을 시작하세요.");
+      return;
+    }
+
     clearInterval(bossTimerId);
     let score=0;
-    $$("#bossQuiz .quiz-card").forEach(card=>{
+    let answered=0;
+
+    $$("#bossQuiz .quiz-card").forEach((card,index)=>{
       const selected=card.querySelector("input:checked");
-      const ok=selected&&selected.value===card.dataset.answer;
-      if(ok)score++;
-      card.style.borderColor=ok?"#4ee0a0":"#ff647c";
+      const correctValue=card.dataset.answer;
+      const ok=selected&&selected.value===correctValue;
+
+      if(selected) answered++;
+      if(ok) score++;
+
+      card.classList.remove("correct","incorrect");
+      card.classList.add(ok?"correct":"incorrect");
+
+      card.querySelectorAll("label").forEach(label=>{
+        label.classList.remove("correct-option","wrong-option");
+        const radio=label.querySelector("input");
+        if(radio.value===correctValue) label.classList.add("correct-option");
+        if(selected&&radio.checked&&!ok) label.classList.add("wrong-option");
+        radio.disabled=true;
+      });
+
+      card.querySelector(".quiz-explanation").classList.add("show");
     });
-    $("#bossScoreText").textContent=`${score} / 8`;
+
+    $("#bossScoreText").textContent=`${score} / ${BOSS_TOTAL}`;
     const fb=$("#bossFeedback");
-    fb.className="mission-feedback show "+(score>=6?"good":"bad");
-    fb.textContent=score>=6?`보스 격파! ${score}문제를 맞혔습니다.`:`${score}문제 정답입니다. 6문제 이상이 필요합니다. 다시 도전하세요.`;
-    if(score===8)unlockAchievement("perfect");
-    if(score>=6)completeStage(10);
-    else{
-      bossStarted=false;
-      $("#startBossBtn").disabled=false;
-      $("#gradeBossBtn").disabled=true;
-      $("#bossTimer").textContent="03:00";
+    const passed=score>=BOSS_PASS;
+    fb.className="mission-feedback show "+(passed?"good":"bad");
+
+    if(passed){
+      fb.textContent=`보스 격파! 랜덤 문제 ${BOSS_TOTAL}개 중 ${score}문제를 맞혔습니다.`;
+    }else if(timeOver){
+      fb.textContent=`시간 종료! ${score}문제 정답입니다. 새 문제 세트로 다시 도전하세요.`;
+    }else{
+      fb.textContent=`${answered}문제에 응답했고 ${score}문제를 맞혔습니다. ${BOSS_PASS}문제 이상이 필요합니다.`;
+    }
+
+    if(score===BOSS_TOTAL) unlockAchievement("perfect");
+
+    bossStarted=false;
+    $("#bossDifficulty").disabled=false;
+    $("#gradeBossBtn").disabled=true;
+    $("#startBossBtn").disabled=false;
+    $("#startBossBtn").textContent=passed?"새 랜덤 문제로 다시 도전":"새 문제로 재도전";
+
+    if(passed){
+      completeStage(10);
+    }else{
       playTone(170,.2);
     }
   }
